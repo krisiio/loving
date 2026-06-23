@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>💕 我们的恋爱日记</title>
 
+    <!-- 使用稳定的 CDN 加载 Three.js -->
     <script type="importmap">
         {
             "imports": {
@@ -329,7 +330,12 @@
     <!-- JavaScript -->
     <!-- ============================================================ -->
     <script type="module">
-        // ----- 导入 Three.js -----
+        // ============================================================
+        // 最终版 恋爱日记 - 版本 2.0
+        // 修复：严格日期验证、地球强制加载、数据兼容性
+        // ============================================================
+
+        // ----- 导入 Three.js（带错误处理） -----
         let THREE, OrbitControls;
         try {
             const module = await import('three');
@@ -338,12 +344,15 @@
             OrbitControls = controlsModule.OrbitControls;
             console.log('✅ Three.js 加载成功');
         } catch (err) {
-            console.error('❌ Three.js 加载失败，地球功能不可用', err);
+            console.error('❌ Three.js 加载失败', err);
+            // 全局标记
+            window.THREE_LOAD_FAILED = true;
         }
 
         // ----- 存储与工具函数 -----
         const STORAGE_KEY = 'love_diary_data';
 
+        // 定义默认数据结构（确保新用户无数据时也能正常）
         function getDefaultData() {
             return {
                 startDate: '',
@@ -354,20 +363,30 @@
             };
         }
 
+        // 加载数据，并修复旧数据格式
         function loadData() {
             try {
                 const raw = localStorage.getItem(STORAGE_KEY);
                 if (!raw) return getDefaultData();
                 const data = JSON.parse(raw);
                 const def = getDefaultData();
+                // 确保所有顶层字段存在
                 for (const k in def) {
                     if (!(k in data)) data[k] = def[k];
                 }
+                // 确保 cities 中每个 city 有 note 字段
                 for (const c in data.cities) {
                     if (!data.cities[c].note) data.cities[c].note = '';
                 }
+                // 确保 memos 三个子数组存在
+                for (const mk of ['touched', 'angry', 'todo']) {
+                    if (!data.memos[mk]) data.memos[mk] = [];
+                }
                 return data;
-            } catch { return getDefaultData(); }
+            } catch (e) {
+                console.warn('数据加载失败，使用默认数据', e);
+                return getDefaultData();
+            }
         }
 
         function saveData(data) {
@@ -376,99 +395,321 @@
 
         function formatDate(d) {
             const y = d.getFullYear();
-            const m = String(d.getMonth()+1).padStart(2,'0');
-            const day = String(d.getDate()).padStart(2,'0');
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
             return `${y}-${m}-${day}`;
         }
 
         function parseDate(str) {
             const parts = str.split('-').map(Number);
-            return new Date(parts[0], parts[1]-1, parts[2]);
+            return new Date(parts[0], parts[1] - 1, parts[2]);
         }
 
         function getDaysDiff(d1, d2) {
             const t1 = new Date(d1.getFullYear(), d1.getMonth(), d1.getDate());
             const t2 = new Date(d2.getFullYear(), d2.getMonth(), d2.getDate());
-            return Math.floor((t2 - t1) / (1000*60*60*24));
+            return Math.floor((t2 - t1) / (1000 * 60 * 60 * 24));
         }
 
-        // ----- 城市坐标库（国内全覆盖 + 用户指定） -----
+        // ----- 城市坐标库（完整） -----
         const CITY_COORDS = {
-            '北京':{lat:39.9,lng:116.4},'天津':{lat:39.1,lng:117.2},'上海':{lat:31.2,lng:121.5},'重庆':{lat:29.6,lng:106.5},
-            '石家庄':{lat:38.0,lng:114.5},'太原':{lat:37.9,lng:112.6},'呼和浩特':{lat:40.8,lng:111.7},'沈阳':{lat:41.8,lng:123.4},
-            '长春':{lat:43.9,lng:125.3},'哈尔滨':{lat:45.8,lng:126.6},'南京':{lat:32.1,lng:118.8},'杭州':{lat:30.3,lng:120.2},
-            '合肥':{lat:31.8,lng:117.2},'福州':{lat:26.1,lng:119.3},'南昌':{lat:28.7,lng:115.9},'济南':{lat:36.7,lng:117.0},
-            '郑州':{lat:34.8,lng:113.7},'武汉':{lat:30.6,lng:114.3},'长沙':{lat:28.2,lng:113.0},'广州':{lat:23.1,lng:113.3},
-            '南宁':{lat:22.8,lng:108.3},'海口':{lat:20.0,lng:110.3},'成都':{lat:30.6,lng:104.1},'贵阳':{lat:26.6,lng:106.7},
-            '昆明':{lat:25.0,lng:102.7},'拉萨':{lat:29.6,lng:91.1},'西安':{lat:34.3,lng:108.9},'兰州':{lat:36.1,lng:103.8},
-            '西宁':{lat:36.6,lng:101.8},'银川':{lat:38.5,lng:106.3},'乌鲁木齐':{lat:43.8,lng:87.6},'台北':{lat:25.0,lng:121.5},
-            '香港':{lat:22.3,lng:114.2},'澳门':{lat:22.2,lng:113.5},
-            '大连':{lat:38.9,lng:121.6},'青岛':{lat:36.1,lng:120.4},'宁波':{lat:29.9,lng:121.6},'厦门':{lat:24.5,lng:118.1},
-            '深圳':{lat:22.5,lng:114.1},'苏州':{lat:31.3,lng:120.6},'无锡':{lat:31.5,lng:120.3},'常州':{lat:31.8,lng:120.0},
-            '徐州':{lat:34.3,lng:117.2},'温州':{lat:28.0,lng:120.7},'绍兴':{lat:30.0,lng:120.6},'嘉兴':{lat:30.8,lng:120.8},
-            '金华':{lat:29.1,lng:119.6},'台州':{lat:28.7,lng:121.4},'泉州':{lat:24.9,lng:118.6},'漳州':{lat:24.5,lng:117.6},
-            '龙岩':{lat:25.1,lng:117.0},'三明':{lat:26.2,lng:117.6},'南平':{lat:26.6,lng:118.2},'宁德':{lat:26.7,lng:119.5},
-            '烟台':{lat:37.5,lng:121.4},'潍坊':{lat:36.7,lng:119.2},'淄博':{lat:36.8,lng:118.1},'临沂':{lat:35.1,lng:118.3},
-            '济宁':{lat:35.4,lng:116.6},'泰安':{lat:36.2,lng:117.1},'威海':{lat:37.5,lng:122.1},'日照':{lat:35.4,lng:119.5},
-            '枣庄':{lat:34.8,lng:117.3},'德州':{lat:37.4,lng:116.3},'聊城':{lat:36.5,lng:115.9},'滨州':{lat:37.4,lng:118.0},
-            '菏泽':{lat:35.2,lng:115.5},'东营':{lat:37.5,lng:118.5},'鞍山':{lat:41.1,lng:123.0},'抚顺':{lat:41.9,lng:123.9},
-            '本溪':{lat:41.3,lng:123.8},'丹东':{lat:40.1,lng:124.3},'锦州':{lat:41.1,lng:121.2},'营口':{lat:40.7,lng:122.2},
-            '阜新':{lat:42.0,lng:121.7},'辽阳':{lat:41.3,lng:123.2},'盘锦':{lat:41.1,lng:122.1},'铁岭':{lat:42.3,lng:123.8},
-            '朝阳':{lat:41.6,lng:120.5},'葫芦岛':{lat:40.8,lng:120.8},'吉林':{lat:43.9,lng:126.6},'四平':{lat:43.2,lng:124.4},
-            '辽源':{lat:42.9,lng:125.1},'通化':{lat:41.7,lng:125.9},'白山':{lat:41.9,lng:126.4},'松原':{lat:45.1,lng:124.8},
-            '白城':{lat:45.6,lng:122.8},'延边':{lat:42.9,lng:129.5},'齐齐哈尔':{lat:47.3,lng:123.9},'鸡西':{lat:45.3,lng:130.9},
-            '鹤岗':{lat:47.3,lng:130.3},'双鸭山':{lat:46.6,lng:131.2},'大庆':{lat:46.6,lng:125.0},'伊春':{lat:47.7,lng:128.8},
-            '佳木斯':{lat:46.8,lng:130.4},'七台河':{lat:45.8,lng:131.0},'牡丹江':{lat:44.6,lng:129.6},'黑河':{lat:50.2,lng:127.5},
-            '绥化':{lat:46.6,lng:127.0},'大兴安岭':{lat:50.4,lng:124.1},'包头':{lat:40.7,lng:110.0},'乌海':{lat:39.7,lng:106.8},
-            '赤峰':{lat:42.3,lng:118.9},'通辽':{lat:43.6,lng:122.3},'鄂尔多斯':{lat:39.6,lng:110.0},'呼伦贝尔':{lat:49.2,lng:119.7},
-            '巴彦淖尔':{lat:40.8,lng:107.4},'乌兰察布':{lat:41.0,lng:113.1},'兴安盟':{lat:46.1,lng:122.0},'锡林郭勒':{lat:43.9,lng:116.1},
-            '阿拉善':{lat:38.8,lng:105.7},'唐山':{lat:39.6,lng:118.2},'秦皇岛':{lat:39.9,lng:119.6},'邯郸':{lat:36.6,lng:114.5},
-            '邢台':{lat:37.1,lng:114.5},'保定':{lat:38.9,lng:115.5},'张家口':{lat:40.8,lng:114.9},'承德':{lat:40.9,lng:117.9},
-            '沧州':{lat:38.3,lng:116.8},'廊坊':{lat:39.5,lng:116.7},'衡水':{lat:37.7,lng:115.7},'大同':{lat:40.1,lng:113.3},
-            '阳泉':{lat:37.9,lng:113.6},'长治':{lat:36.2,lng:113.1},'晋城':{lat:35.5,lng:112.8},'朔州':{lat:39.3,lng:112.4},
-            '晋中':{lat:37.7,lng:112.8},'运城':{lat:35.0,lng:111.0},'忻州':{lat:38.4,lng:112.7},'临汾':{lat:36.1,lng:111.5},
-            '吕梁':{lat:37.5,lng:111.1},'开封':{lat:34.8,lng:114.3},'洛阳':{lat:34.6,lng:112.4},'平顶山':{lat:33.7,lng:113.3},
-            '安阳':{lat:36.1,lng:114.3},'鹤壁':{lat:35.9,lng:114.2},'新乡':{lat:35.3,lng:113.9},'焦作':{lat:35.2,lng:113.2},
-            '濮阳':{lat:35.7,lng:115.1},'许昌':{lat:34.0,lng:113.8},'漯河':{lat:33.6,lng:114.0},'三门峡':{lat:34.8,lng:111.2},
-            '南阳':{lat:33.0,lng:112.5},'商丘':{lat:34.4,lng:115.6},'信阳':{lat:32.1,lng:114.1},'周口':{lat:33.6,lng:114.6},
-            '驻马店':{lat:33.0,lng:114.0},'济源':{lat:35.1,lng:112.6},'黄石':{lat:30.2,lng:115.1},'十堰':{lat:32.6,lng:110.8},
-            '宜昌':{lat:30.7,lng:111.3},'襄阳':{lat:32.0,lng:112.1},'鄂州':{lat:30.4,lng:114.9},'荆门':{lat:31.0,lng:112.2},
-            '孝感':{lat:30.9,lng:113.9},'荆州':{lat:30.3,lng:112.2},'黄冈':{lat:30.4,lng:114.9},'咸宁':{lat:29.8,lng:114.3},
-            '随州':{lat:31.7,lng:113.4},'恩施':{lat:30.3,lng:109.5},'神农架':{lat:31.7,lng:110.7},'株洲':{lat:27.8,lng:113.1},
-            '湘潭':{lat:27.8,lng:112.9},'衡阳':{lat:26.9,lng:112.6},'邵阳':{lat:27.2,lng:111.5},'岳阳':{lat:29.4,lng:113.1},
-            '常德':{lat:29.0,lng:111.7},'张家界':{lat:29.1,lng:110.5},'益阳':{lat:28.6,lng:112.3},'郴州':{lat:25.8,lng:113.0},
-            '永州':{lat:26.4,lng:111.6},'怀化':{lat:27.5,lng:110.0},'娄底':{lat:27.7,lng:112.0},'湘西':{lat:28.3,lng:109.7},
-            '韶关':{lat:24.8,lng:113.6},'珠海':{lat:22.3,lng:113.6},'汕头':{lat:23.4,lng:116.7},'佛山':{lat:23.0,lng:113.1},
-            '江门':{lat:22.6,lng:113.1},'湛江':{lat:21.2,lng:110.4},'茂名':{lat:21.7,lng:110.9},'肇庆':{lat:23.0,lng:112.5},
-            '惠州':{lat:23.1,lng:114.4},'梅州':{lat:24.3,lng:116.1},'汕尾':{lat:22.8,lng:115.4},'河源':{lat:23.7,lng:114.7},
-            '阳江':{lat:21.9,lng:111.9},'清远':{lat:23.7,lng:113.0},'东莞':{lat:23.0,lng:113.8},'中山':{lat:22.5,lng:113.4},
-            '潮州':{lat:23.7,lng:116.6},'揭阳':{lat:23.5,lng:116.4},'云浮':{lat:22.9,lng:112.0},'柳州':{lat:24.3,lng:109.4},
-            '桂林':{lat:25.3,lng:110.3},'梧州':{lat:23.5,lng:111.3},'北海':{lat:21.5,lng:109.1},'防城港':{lat:21.7,lng:108.4},
-            '钦州':{lat:21.9,lng:108.6},'贵港':{lat:23.1,lng:109.6},'玉林':{lat:22.6,lng:110.2},'百色':{lat:23.9,lng:106.6},
-            '贺州':{lat:24.4,lng:111.6},'河池':{lat:24.7,lng:108.1},'来宾':{lat:23.7,lng:109.2},'崇左':{lat:22.4,lng:107.4},
-            '自贡':{lat:29.3,lng:104.8},'攀枝花':{lat:26.6,lng:101.7},'泸州':{lat:28.9,lng:105.4},'德阳':{lat:31.1,lng:104.4},
-            '绵阳':{lat:31.5,lng:104.7},'广元':{lat:32.4,lng:105.8},'遂宁':{lat:30.5,lng:105.6},'内江':{lat:29.6,lng:105.1},
-            '乐山':{lat:29.6,lng:103.8},'南充':{lat:30.8,lng:106.1},'眉山':{lat:30.1,lng:103.8},'宜宾':{lat:28.8,lng:104.6},
-            '广安':{lat:30.5,lng:106.6},'达州':{lat:31.2,lng:107.5},'雅安':{lat:30.0,lng:103.0},'巴中':{lat:31.9,lng:106.7},
-            '资阳':{lat:30.1,lng:104.6},'阿坝':{lat:31.9,lng:102.2},'甘孜':{lat:30.0,lng:101.9},'凉山':{lat:27.9,lng:102.3},
-            '六盘水':{lat:26.6,lng:104.8},'遵义':{lat:27.7,lng:106.9},'安顺':{lat:26.3,lng:105.9},'铜仁':{lat:27.7,lng:109.2},
-            '黔西南':{lat:25.1,lng:104.9},'毕节':{lat:27.3,lng:105.3},'黔东南':{lat:26.6,lng:107.9},'黔南':{lat:26.3,lng:107.5},
-            '曲靖':{lat:25.5,lng:103.8},'玉溪':{lat:24.4,lng:102.5},'保山':{lat:25.1,lng:99.2},'昭通':{lat:27.3,lng:103.7},
-            '丽江':{lat:26.9,lng:100.2},'普洱':{lat:22.8,lng:101.0},'临沧':{lat:23.9,lng:100.1},'楚雄':{lat:25.0,lng:101.5},
-            '红河':{lat:23.4,lng:103.4},'文山':{lat:23.4,lng:104.2},'西双版纳':{lat:22.0,lng:100.8},'大理':{lat:25.6,lng:100.2},
-            '德宏':{lat:24.4,lng:98.6},'怒江':{lat:25.9,lng:98.9},'迪庆':{lat:27.8,lng:99.7},'铜川':{lat:34.9,lng:109.0},
-            '宝鸡':{lat:34.4,lng:107.1},'咸阳':{lat:34.3,lng:108.7},'渭南':{lat:34.5,lng:109.5},'延安':{lat:36.6,lng:109.5},
-            '汉中':{lat:33.1,lng:107.0},'榆林':{lat:38.3,lng:109.7},'安康':{lat:32.7,lng:109.0},'商洛':{lat:33.9,lng:109.9},
-            '嘉峪关':{lat:39.8,lng:98.3},'金昌':{lat:38.5,lng:102.2},'白银':{lat:36.5,lng:104.2},'天水':{lat:34.6,lng:105.7},
-            '武威':{lat:37.9,lng:102.6},'张掖':{lat:38.9,lng:100.5},'平凉':{lat:35.5,lng:106.7},'酒泉':{lat:39.7,lng:98.5},
-            '庆阳':{lat:35.7,lng:107.6},'定西':{lat:35.6,lng:104.6},'陇南':{lat:33.4,lng:104.9},'临夏':{lat:35.6,lng:103.2},
-            '甘南':{lat:35.0,lng:102.9},'海东':{lat:36.5,lng:102.1},'海北':{lat:36.9,lng:100.9},'黄南':{lat:35.5,lng:102.0},
-            '海南州':{lat:36.3,lng:100.6},'果洛':{lat:34.5,lng:100.2},'玉树':{lat:33.0,lng:97.0},'海西':{lat:37.4,lng:97.3},
-            '石嘴山':{lat:39.0,lng:106.4},'吴忠':{lat:38.0,lng:106.2},'固原':{lat:36.0,lng:106.3},'中卫':{lat:37.5,lng:105.2},
-            '克拉玛依':{lat:45.6,lng:84.9},'吐鲁番':{lat:42.9,lng:89.2},'哈密':{lat:42.8,lng:93.5},'昌吉':{lat:44.0,lng:87.3},
-            '博州':{lat:44.9,lng:82.1},'巴州':{lat:41.7,lng:86.1},'阿克苏':{lat:41.2,lng:80.3},'克州':{lat:39.7,lng:76.1},
-            '喀什':{lat:39.5,lng:76.0},'和田':{lat:37.1,lng:79.9},'伊犁':{lat:43.9,lng:81.3},'塔城':{lat:46.7,lng:83.0},
-            '阿勒泰':{lat:47.8,lng:88.1},'赣州':{lat:25.8,lng:114.9},'佛罗里达':{lat:25.8,lng:-80.2}
+            '北京': { lat: 39.9, lng: 116.4 },
+            '天津': { lat: 39.1, lng: 117.2 },
+            '上海': { lat: 31.2, lng: 121.5 },
+            '重庆': { lat: 29.6, lng: 106.5 },
+            '石家庄': { lat: 38.0, lng: 114.5 },
+            '太原': { lat: 37.9, lng: 112.6 },
+            '呼和浩特': { lat: 40.8, lng: 111.7 },
+            '沈阳': { lat: 41.8, lng: 123.4 },
+            '长春': { lat: 43.9, lng: 125.3 },
+            '哈尔滨': { lat: 45.8, lng: 126.6 },
+            '南京': { lat: 32.1, lng: 118.8 },
+            '杭州': { lat: 30.3, lng: 120.2 },
+            '合肥': { lat: 31.8, lng: 117.2 },
+            '福州': { lat: 26.1, lng: 119.3 },
+            '南昌': { lat: 28.7, lng: 115.9 },
+            '济南': { lat: 36.7, lng: 117.0 },
+            '郑州': { lat: 34.8, lng: 113.7 },
+            '武汉': { lat: 30.6, lng: 114.3 },
+            '长沙': { lat: 28.2, lng: 113.0 },
+            '广州': { lat: 23.1, lng: 113.3 },
+            '南宁': { lat: 22.8, lng: 108.3 },
+            '海口': { lat: 20.0, lng: 110.3 },
+            '成都': { lat: 30.6, lng: 104.1 },
+            '贵阳': { lat: 26.6, lng: 106.7 },
+            '昆明': { lat: 25.0, lng: 102.7 },
+            '拉萨': { lat: 29.6, lng: 91.1 },
+            '西安': { lat: 34.3, lng: 108.9 },
+            '兰州': { lat: 36.1, lng: 103.8 },
+            '西宁': { lat: 36.6, lng: 101.8 },
+            '银川': { lat: 38.5, lng: 106.3 },
+            '乌鲁木齐': { lat: 43.8, lng: 87.6 },
+            '台北': { lat: 25.0, lng: 121.5 },
+            '香港': { lat: 22.3, lng: 114.2 },
+            '澳门': { lat: 22.2, lng: 113.5 },
+            '大连': { lat: 38.9, lng: 121.6 },
+            '青岛': { lat: 36.1, lng: 120.4 },
+            '宁波': { lat: 29.9, lng: 121.6 },
+            '厦门': { lat: 24.5, lng: 118.1 },
+            '深圳': { lat: 22.5, lng: 114.1 },
+            '苏州': { lat: 31.3, lng: 120.6 },
+            '无锡': { lat: 31.5, lng: 120.3 },
+            '常州': { lat: 31.8, lng: 120.0 },
+            '徐州': { lat: 34.3, lng: 117.2 },
+            '温州': { lat: 28.0, lng: 120.7 },
+            '绍兴': { lat: 30.0, lng: 120.6 },
+            '嘉兴': { lat: 30.8, lng: 120.8 },
+            '金华': { lat: 29.1, lng: 119.6 },
+            '台州': { lat: 28.7, lng: 121.4 },
+            '泉州': { lat: 24.9, lng: 118.6 },
+            '漳州': { lat: 24.5, lng: 117.6 },
+            '龙岩': { lat: 25.1, lng: 117.0 },
+            '三明': { lat: 26.2, lng: 117.6 },
+            '南平': { lat: 26.6, lng: 118.2 },
+            '宁德': { lat: 26.7, lng: 119.5 },
+            '烟台': { lat: 37.5, lng: 121.4 },
+            '潍坊': { lat: 36.7, lng: 119.2 },
+            '淄博': { lat: 36.8, lng: 118.1 },
+            '临沂': { lat: 35.1, lng: 118.3 },
+            '济宁': { lat: 35.4, lng: 116.6 },
+            '泰安': { lat: 36.2, lng: 117.1 },
+            '威海': { lat: 37.5, lng: 122.1 },
+            '日照': { lat: 35.4, lng: 119.5 },
+            '枣庄': { lat: 34.8, lng: 117.3 },
+            '德州': { lat: 37.4, lng: 116.3 },
+            '聊城': { lat: 36.5, lng: 115.9 },
+            '滨州': { lat: 37.4, lng: 118.0 },
+            '菏泽': { lat: 35.2, lng: 115.5 },
+            '东营': { lat: 37.5, lng: 118.5 },
+            '鞍山': { lat: 41.1, lng: 123.0 },
+            '抚顺': { lat: 41.9, lng: 123.9 },
+            '本溪': { lat: 41.3, lng: 123.8 },
+            '丹东': { lat: 40.1, lng: 124.3 },
+            '锦州': { lat: 41.1, lng: 121.2 },
+            '营口': { lat: 40.7, lng: 122.2 },
+            '阜新': { lat: 42.0, lng: 121.7 },
+            '辽阳': { lat: 41.3, lng: 123.2 },
+            '盘锦': { lat: 41.1, lng: 122.1 },
+            '铁岭': { lat: 42.3, lng: 123.8 },
+            '朝阳': { lat: 41.6, lng: 120.5 },
+            '葫芦岛': { lat: 40.8, lng: 120.8 },
+            '吉林': { lat: 43.9, lng: 126.6 },
+            '四平': { lat: 43.2, lng: 124.4 },
+            '辽源': { lat: 42.9, lng: 125.1 },
+            '通化': { lat: 41.7, lng: 125.9 },
+            '白山': { lat: 41.9, lng: 126.4 },
+            '松原': { lat: 45.1, lng: 124.8 },
+            '白城': { lat: 45.6, lng: 122.8 },
+            '延边': { lat: 42.9, lng: 129.5 },
+            '齐齐哈尔': { lat: 47.3, lng: 123.9 },
+            '鸡西': { lat: 45.3, lng: 130.9 },
+            '鹤岗': { lat: 47.3, lng: 130.3 },
+            '双鸭山': { lat: 46.6, lng: 131.2 },
+            '大庆': { lat: 46.6, lng: 125.0 },
+            '伊春': { lat: 47.7, lng: 128.8 },
+            '佳木斯': { lat: 46.8, lng: 130.4 },
+            '七台河': { lat: 45.8, lng: 131.0 },
+            '牡丹江': { lat: 44.6, lng: 129.6 },
+            '黑河': { lat: 50.2, lng: 127.5 },
+            '绥化': { lat: 46.6, lng: 127.0 },
+            '大兴安岭': { lat: 50.4, lng: 124.1 },
+            '包头': { lat: 40.7, lng: 110.0 },
+            '乌海': { lat: 39.7, lng: 106.8 },
+            '赤峰': { lat: 42.3, lng: 118.9 },
+            '通辽': { lat: 43.6, lng: 122.3 },
+            '鄂尔多斯': { lat: 39.6, lng: 110.0 },
+            '呼伦贝尔': { lat: 49.2, lng: 119.7 },
+            '巴彦淖尔': { lat: 40.8, lng: 107.4 },
+            '乌兰察布': { lat: 41.0, lng: 113.1 },
+            '兴安盟': { lat: 46.1, lng: 122.0 },
+            '锡林郭勒': { lat: 43.9, lng: 116.1 },
+            '阿拉善': { lat: 38.8, lng: 105.7 },
+            '唐山': { lat: 39.6, lng: 118.2 },
+            '秦皇岛': { lat: 39.9, lng: 119.6 },
+            '邯郸': { lat: 36.6, lng: 114.5 },
+            '邢台': { lat: 37.1, lng: 114.5 },
+            '保定': { lat: 38.9, lng: 115.5 },
+            '张家口': { lat: 40.8, lng: 114.9 },
+            '承德': { lat: 40.9, lng: 117.9 },
+            '沧州': { lat: 38.3, lng: 116.8 },
+            '廊坊': { lat: 39.5, lng: 116.7 },
+            '衡水': { lat: 37.7, lng: 115.7 },
+            '大同': { lat: 40.1, lng: 113.3 },
+            '阳泉': { lat: 37.9, lng: 113.6 },
+            '长治': { lat: 36.2, lng: 113.1 },
+            '晋城': { lat: 35.5, lng: 112.8 },
+            '朔州': { lat: 39.3, lng: 112.4 },
+            '晋中': { lat: 37.7, lng: 112.8 },
+            '运城': { lat: 35.0, lng: 111.0 },
+            '忻州': { lat: 38.4, lng: 112.7 },
+            '临汾': { lat: 36.1, lng: 111.5 },
+            '吕梁': { lat: 37.5, lng: 111.1 },
+            '开封': { lat: 34.8, lng: 114.3 },
+            '洛阳': { lat: 34.6, lng: 112.4 },
+            '平顶山': { lat: 33.7, lng: 113.3 },
+            '安阳': { lat: 36.1, lng: 114.3 },
+            '鹤壁': { lat: 35.9, lng: 114.2 },
+            '新乡': { lat: 35.3, lng: 113.9 },
+            '焦作': { lat: 35.2, lng: 113.2 },
+            '濮阳': { lat: 35.7, lng: 115.1 },
+            '许昌': { lat: 34.0, lng: 113.8 },
+            '漯河': { lat: 33.6, lng: 114.0 },
+            '三门峡': { lat: 34.8, lng: 111.2 },
+            '南阳': { lat: 33.0, lng: 112.5 },
+            '商丘': { lat: 34.4, lng: 115.6 },
+            '信阳': { lat: 32.1, lng: 114.1 },
+            '周口': { lat: 33.6, lng: 114.6 },
+            '驻马店': { lat: 33.0, lng: 114.0 },
+            '济源': { lat: 35.1, lng: 112.6 },
+            '黄石': { lat: 30.2, lng: 115.1 },
+            '十堰': { lat: 32.6, lng: 110.8 },
+            '宜昌': { lat: 30.7, lng: 111.3 },
+            '襄阳': { lat: 32.0, lng: 112.1 },
+            '鄂州': { lat: 30.4, lng: 114.9 },
+            '荆门': { lat: 31.0, lng: 112.2 },
+            '孝感': { lat: 30.9, lng: 113.9 },
+            '荆州': { lat: 30.3, lng: 112.2 },
+            '黄冈': { lat: 30.4, lng: 114.9 },
+            '咸宁': { lat: 29.8, lng: 114.3 },
+            '随州': { lat: 31.7, lng: 113.4 },
+            '恩施': { lat: 30.3, lng: 109.5 },
+            '神农架': { lat: 31.7, lng: 110.7 },
+            '株洲': { lat: 27.8, lng: 113.1 },
+            '湘潭': { lat: 27.8, lng: 112.9 },
+            '衡阳': { lat: 26.9, lng: 112.6 },
+            '邵阳': { lat: 27.2, lng: 111.5 },
+            '岳阳': { lat: 29.4, lng: 113.1 },
+            '常德': { lat: 29.0, lng: 111.7 },
+            '张家界': { lat: 29.1, lng: 110.5 },
+            '益阳': { lat: 28.6, lng: 112.3 },
+            '郴州': { lat: 25.8, lng: 113.0 },
+            '永州': { lat: 26.4, lng: 111.6 },
+            '怀化': { lat: 27.5, lng: 110.0 },
+            '娄底': { lat: 27.7, lng: 112.0 },
+            '湘西': { lat: 28.3, lng: 109.7 },
+            '韶关': { lat: 24.8, lng: 113.6 },
+            '珠海': { lat: 22.3, lng: 113.6 },
+            '汕头': { lat: 23.4, lng: 116.7 },
+            '佛山': { lat: 23.0, lng: 113.1 },
+            '江门': { lat: 22.6, lng: 113.1 },
+            '湛江': { lat: 21.2, lng: 110.4 },
+            '茂名': { lat: 21.7, lng: 110.9 },
+            '肇庆': { lat: 23.0, lng: 112.5 },
+            '惠州': { lat: 23.1, lng: 114.4 },
+            '梅州': { lat: 24.3, lng: 116.1 },
+            '汕尾': { lat: 22.8, lng: 115.4 },
+            '河源': { lat: 23.7, lng: 114.7 },
+            '阳江': { lat: 21.9, lng: 111.9 },
+            '清远': { lat: 23.7, lng: 113.0 },
+            '东莞': { lat: 23.0, lng: 113.8 },
+            '中山': { lat: 22.5, lng: 113.4 },
+            '潮州': { lat: 23.7, lng: 116.6 },
+            '揭阳': { lat: 23.5, lng: 116.4 },
+            '云浮': { lat: 22.9, lng: 112.0 },
+            '柳州': { lat: 24.3, lng: 109.4 },
+            '桂林': { lat: 25.3, lng: 110.3 },
+            '梧州': { lat: 23.5, lng: 111.3 },
+            '北海': { lat: 21.5, lng: 109.1 },
+            '防城港': { lat: 21.7, lng: 108.4 },
+            '钦州': { lat: 21.9, lng: 108.6 },
+            '贵港': { lat: 23.1, lng: 109.6 },
+            '玉林': { lat: 22.6, lng: 110.2 },
+            '百色': { lat: 23.9, lng: 106.6 },
+            '贺州': { lat: 24.4, lng: 111.6 },
+            '河池': { lat: 24.7, lng: 108.1 },
+            '来宾': { lat: 23.7, lng: 109.2 },
+            '崇左': { lat: 22.4, lng: 107.4 },
+            '自贡': { lat: 29.3, lng: 104.8 },
+            '攀枝花': { lat: 26.6, lng: 101.7 },
+            '泸州': { lat: 28.9, lng: 105.4 },
+            '德阳': { lat: 31.1, lng: 104.4 },
+            '绵阳': { lat: 31.5, lng: 104.7 },
+            '广元': { lat: 32.4, lng: 105.8 },
+            '遂宁': { lat: 30.5, lng: 105.6 },
+            '内江': { lat: 29.6, lng: 105.1 },
+            '乐山': { lat: 29.6, lng: 103.8 },
+            '南充': { lat: 30.8, lng: 106.1 },
+            '眉山': { lat: 30.1, lng: 103.8 },
+            '宜宾': { lat: 28.8, lng: 104.6 },
+            '广安': { lat: 30.5, lng: 106.6 },
+            '达州': { lat: 31.2, lng: 107.5 },
+            '雅安': { lat: 30.0, lng: 103.0 },
+            '巴中': { lat: 31.9, lng: 106.7 },
+            '资阳': { lat: 30.1, lng: 104.6 },
+            '阿坝': { lat: 31.9, lng: 102.2 },
+            '甘孜': { lat: 30.0, lng: 101.9 },
+            '凉山': { lat: 27.9, lng: 102.3 },
+            '六盘水': { lat: 26.6, lng: 104.8 },
+            '遵义': { lat: 27.7, lng: 106.9 },
+            '安顺': { lat: 26.3, lng: 105.9 },
+            '铜仁': { lat: 27.7, lng: 109.2 },
+            '黔西南': { lat: 25.1, lng: 104.9 },
+            '毕节': { lat: 27.3, lng: 105.3 },
+            '黔东南': { lat: 26.6, lng: 107.9 },
+            '黔南': { lat: 26.3, lng: 107.5 },
+            '曲靖': { lat: 25.5, lng: 103.8 },
+            '玉溪': { lat: 24.4, lng: 102.5 },
+            '保山': { lat: 25.1, lng: 99.2 },
+            '昭通': { lat: 27.3, lng: 103.7 },
+            '丽江': { lat: 26.9, lng: 100.2 },
+            '普洱': { lat: 22.8, lng: 101.0 },
+            '临沧': { lat: 23.9, lng: 100.1 },
+            '楚雄': { lat: 25.0, lng: 101.5 },
+            '红河': { lat: 23.4, lng: 103.4 },
+            '文山': { lat: 23.4, lng: 104.2 },
+            '西双版纳': { lat: 22.0, lng: 100.8 },
+            '大理': { lat: 25.6, lng: 100.2 },
+            '德宏': { lat: 24.4, lng: 98.6 },
+            '怒江': { lat: 25.9, lng: 98.9 },
+            '迪庆': { lat: 27.8, lng: 99.7 },
+            '铜川': { lat: 34.9, lng: 109.0 },
+            '宝鸡': { lat: 34.4, lng: 107.1 },
+            '咸阳': { lat: 34.3, lng: 108.7 },
+            '渭南': { lat: 34.5, lng: 109.5 },
+            '延安': { lat: 36.6, lng: 109.5 },
+            '汉中': { lat: 33.1, lng: 107.0 },
+            '榆林': { lat: 38.3, lng: 109.7 },
+            '安康': { lat: 32.7, lng: 109.0 },
+            '商洛': { lat: 33.9, lng: 109.9 },
+            '嘉峪关': { lat: 39.8, lng: 98.3 },
+            '金昌': { lat: 38.5, lng: 102.2 },
+            '白银': { lat: 36.5, lng: 104.2 },
+            '天水': { lat: 34.6, lng: 105.7 },
+            '武威': { lat: 37.9, lng: 102.6 },
+            '张掖': { lat: 38.9, lng: 100.5 },
+            '平凉': { lat: 35.5, lng: 106.7 },
+            '酒泉': { lat: 39.7, lng: 98.5 },
+            '庆阳': { lat: 35.7, lng: 107.6 },
+            '定西': { lat: 35.6, lng: 104.6 },
+            '陇南': { lat: 33.4, lng: 104.9 },
+            '临夏': { lat: 35.6, lng: 103.2 },
+            '甘南': { lat: 35.0, lng: 102.9 },
+            '海东': { lat: 36.5, lng: 102.1 },
+            '海北': { lat: 36.9, lng: 100.9 },
+            '黄南': { lat: 35.5, lng: 102.0 },
+            '海南州': { lat: 36.3, lng: 100.6 },
+            '果洛': { lat: 34.5, lng: 100.2 },
+            '玉树': { lat: 33.0, lng: 97.0 },
+            '海西': { lat: 37.4, lng: 97.3 },
+            '石嘴山': { lat: 39.0, lng: 106.4 },
+            '吴忠': { lat: 38.0, lng: 106.2 },
+            '固原': { lat: 36.0, lng: 106.3 },
+            '中卫': { lat: 37.5, lng: 105.2 },
+            '克拉玛依': { lat: 45.6, lng: 84.9 },
+            '吐鲁番': { lat: 42.9, lng: 89.2 },
+            '哈密': { lat: 42.8, lng: 93.5 },
+            '昌吉': { lat: 44.0, lng: 87.3 },
+            '博州': { lat: 44.9, lng: 82.1 },
+            '巴州': { lat: 41.7, lng: 86.1 },
+            '阿克苏': { lat: 41.2, lng: 80.3 },
+            '克州': { lat: 39.7, lng: 76.1 },
+            '喀什': { lat: 39.5, lng: 76.0 },
+            '和田': { lat: 37.1, lng: 79.9 },
+            '伊犁': { lat: 43.9, lng: 81.3 },
+            '塔城': { lat: 46.7, lng: 83.0 },
+            '阿勒泰': { lat: 47.8, lng: 88.1 },
+            '赣州': { lat: 25.8, lng: 114.9 },
+            '佛罗里达': { lat: 25.8, lng: -80.2 }
         };
 
         function latLngToPosition(lat, lng, radius) {
@@ -481,7 +722,7 @@
             );
         }
 
-        // ----- 数据 -----
+        // ----- 数据加载 -----
         let data = loadData();
 
         // ----- DOM 引用 -----
@@ -528,16 +769,28 @@
         const recordSaveBtn = $('#recordSaveBtn');
         const moodSelector = $('#moodSelector');
 
-        // ----- 启动验证 -----
-        if (data.startDate) {
+        // ============================================================
+        //  启动逻辑 - 严格验证
+        // ============================================================
+        // 如果之前已经正确解锁过，直接进入；否则强制留在启动页
+        if (data.startDate === '2025-01-25') {
             startPage.classList.add('hidden');
             app.classList.add('show');
             updateDaysDisplay();
             initAll();
         } else {
+            // 确保没有任何跳过
+            startPage.classList.remove('hidden');
+            app.classList.remove('show');
             startDateInput.value = '';
+            // 清除可能错误存储的日期
+            if (data.startDate && data.startDate !== '2025-01-25') {
+                data.startDate = '';
+                saveData(data);
+            }
         }
 
+        // 进入按钮
         enterBtn.addEventListener('click', () => {
             const val = startDateInput.value;
             const correct = '2025-01-25';
@@ -545,6 +798,7 @@
                 startError.textContent = '💕 请输入正确的相遇日期：2025-01-25';
                 return;
             }
+            // 正确：保存并进入
             data.startDate = val;
             saveData(data);
             startPage.classList.add('hidden');
@@ -565,6 +819,7 @@
             daysDisplay.innerHTML = `❤️ 已相伴 <strong>${diff >= 0 ? diff : 0}</strong> 天`;
         }
 
+        // ----- 导航切换 -----
         navBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 navBtns.forEach(b => b.classList.remove('active'));
@@ -574,13 +829,18 @@
                 const sec = document.getElementById(target);
                 if (sec) sec.classList.add('active');
                 if (target === 'section-earth') {
-                    setTimeout(() => { if (typeof onEarthResize === 'function') onEarthResize(); }, 200);
+                    setTimeout(() => {
+                        if (typeof onEarthResize === 'function') onEarthResize();
+                    }, 200);
                 }
             });
         });
 
-        // ----- 初始化所有功能 -----
+        // ============================================================
+        //  初始化所有功能
+        // ============================================================
         function initAll() {
+            // 初始化非地球模块
             try {
                 renderCalendar();
                 renderMemos();
@@ -590,17 +850,30 @@
                 console.error('❌ 基础功能初始化失败', err);
             }
 
-            if (typeof THREE !== 'undefined' && THREE !== null) {
+            // 尝试初始化地球（如果 Three.js 可用）
+            if (typeof THREE !== 'undefined' && THREE !== null && !window.THREE_LOAD_FAILED) {
                 try {
                     initEarth();
                     console.log('✅ 地球初始化成功');
                 } catch (err) {
                     console.error('❌ 地球初始化失败', err);
-                    earthContainer.innerHTML = '<div style="color:rgba(255,255,255,0.5);text-align:center;padding:40px;">🌍 地球加载失败，请刷新重试</div>';
+                    earthContainer.innerHTML = `
+                        <div style="display:flex;align-items:center;justify-content:center;height:100%;color:rgba(255,255,255,0.6);flex-direction:column;gap:10px;">
+                            <span style="font-size:3rem;">🌍</span>
+                            <span>地球加载失败，请刷新页面重试</span>
+                            <span style="font-size:0.8rem;">如果持续失败，检查网络或更换浏览器</span>
+                        </div>
+                    `;
                 }
             } else {
                 console.warn('⚠️ Three.js 未加载，跳过地球');
-                earthContainer.innerHTML = '<div style="color:rgba(255,255,255,0.5);text-align:center;padding:40px;">🌍 地球功能暂不可用（Three.js 加载失败）</div>';
+                earthContainer.innerHTML = `
+                    <div style="display:flex;align-items:center;justify-content:center;height:100%;color:rgba(255,255,255,0.6);flex-direction:column;gap:10px;">
+                        <span style="font-size:3rem;">🌍</span>
+                        <span>地球功能暂不可用（Three.js 加载失败）</span>
+                        <span style="font-size:0.8rem;">请检查网络连接后刷新</span>
+                    </div>
+                `;
             }
 
             setInterval(updateDaysDisplay, 60000);
@@ -620,8 +893,7 @@
         function initEarth() {
             if (earthInitialized) return;
             if (!THREE || !OrbitControls) {
-                console.warn('Three.js 未加载，无法初始化地球');
-                return;
+                throw new Error('Three.js 未加载');
             }
 
             const container = earthContainer;
@@ -631,12 +903,14 @@
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x0b0e1a);
 
-            camera = new THREE.PerspectiveCamera(45, w/h, 0.1, 1000);
+            camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
             camera.position.set(0, 0, 3.2);
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(w, h);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+            // 清空容器内原有 canvas，保留工具栏
             const toolbar = container.querySelector('.earth-toolbar');
             const oldCanvas = container.querySelector('canvas');
             if (oldCanvas) oldCanvas.remove();
@@ -655,19 +929,19 @@
             const ambient = new THREE.AmbientLight(0x404060, 0.6);
             scene.add(ambient);
             const dirLight = new THREE.DirectionalLight(0xffffff, 1.8);
-            dirLight.position.set(5,3,5);
+            dirLight.position.set(5, 3, 5);
             scene.add(dirLight);
             const backLight = new THREE.DirectionalLight(0x8888ff, 0.4);
-            backLight.position.set(-3,-1,-4);
+            backLight.position.set(-3, -1, -4);
             scene.add(backLight);
 
             // 星星
             const starsGeo = new THREE.BufferGeometry();
             const starCount = 2000;
-            const starPos = new Float32Array(starCount*3);
-            for (let i=0; i<starCount*3; i++) starPos[i] = (Math.random()-0.5)*200;
-            starsGeo.setAttribute('position', new THREE.BufferAttribute(starPos,3));
-            const starMat = new THREE.PointsMaterial({ color:0xffffff, size:0.15, transparent:true, opacity:0.8 });
+            const starPos = new Float32Array(starCount * 3);
+            for (let i = 0; i < starCount * 3; i++) starPos[i] = (Math.random() - 0.5) * 200;
+            starsGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+            const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.15, transparent: true, opacity: 0.8 });
             const stars = new THREE.Points(starsGeo, starMat);
             scene.add(stars);
 
@@ -687,7 +961,7 @@
             scene.add(earthGroup);
 
             // 光晕
-            const glowGeo = new THREE.SphereGeometry(radius*1.01, 48, 48);
+            const glowGeo = new THREE.SphereGeometry(radius * 1.01, 48, 48);
             const glowMat = new THREE.MeshBasicMaterial({
                 color: 0x4488ff,
                 transparent: true,
@@ -697,12 +971,13 @@
             const glow = new THREE.Mesh(glowGeo, glowMat);
             earthGroup.add(glow);
 
+            // 加载城市标记
             loadCityMarkers();
 
             earthInitialized = true;
             animateEarth();
 
-            // 点击事件
+            // 点击检测
             const raycaster = new THREE.Raycaster();
             const mouse = new THREE.Vector2();
             renderer.domElement.addEventListener('click', (event) => {
@@ -719,6 +994,7 @@
                 }
             });
 
+            // 添加城市按钮
             addCityBtn.addEventListener('click', () => {
                 const name = cityInput.value.trim();
                 if (!name) { alert('请输入城市名'); return; }
@@ -741,7 +1017,7 @@
             const container = earthContainer;
             const w = container.clientWidth || 600;
             const h = container.clientHeight || 600;
-            camera.aspect = w/h;
+            camera.aspect = w / h;
             camera.updateProjectionMatrix();
             renderer.setSize(w, h);
         }
@@ -769,7 +1045,7 @@
             mesh.position.copy(position);
             mesh.userData.cityName = cityName;
 
-            const glowGeo2 = new THREE.SphereGeometry(size*2.5, 16, 16);
+            const glowGeo2 = new THREE.SphereGeometry(size * 2.5, 16, 16);
             const glowMat2 = new THREE.MeshBasicMaterial({
                 color: 0x88ccff,
                 transparent: true,
@@ -814,7 +1090,7 @@
             saveData(data);
             loadCityMarkers();
             cityInput.value = '';
-            controls.autoRotate = true;
+            if (controls) controls.autoRotate = true;
         }
 
         // ----- 照片弹窗 -----
@@ -874,7 +1150,7 @@
 
         photoUploadInput.addEventListener('change', (e) => {
             const files = e.target.files;
-            if (!files || files.length===0) return;
+            if (!files || files.length === 0) return;
             const cityName = currentCityForPhotos;
             if (!cityName) return;
             const city = data.cities[cityName];
@@ -914,55 +1190,60 @@
         let calMonth = new Date().getMonth();
 
         function renderCalendar() {
-            const year = calYear, month = calMonth;
-            calYearMonth.textContent = `${year}年 ${month+1}月`;
+            const year = calYear,
+                month = calMonth;
+            calYearMonth.textContent = `${year}年 ${month + 1}月`;
 
             const firstDay = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month+1, 0).getDate();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
             const daysInPrev = new Date(year, month, 0).getDate();
+
             const today = new Date();
             const todayStr = formatDate(today);
 
             let html = '';
-            const weekLabels = ['日','一','二','三','四','五','六'];
+            const weekLabels = ['日', '一', '二', '三', '四', '五', '六'];
             for (const wl of weekLabels) html += `<div class="week-label">${wl}</div>`;
 
+            // 上月填充
             const prevStart = daysInPrev - firstDay + 1;
-            for (let i=prevStart; i<=daysInPrev; i++) {
-                const dateObj = new Date(year, month-1, i);
+            for (let i = prevStart; i <= daysInPrev; i++) {
+                const dateObj = new Date(year, month - 1, i);
                 const dateStr = formatDate(dateObj);
                 const record = data.calendar[dateStr];
                 const hasRecord = !!record;
                 const mood = record?.mood || '';
-                html += `<button class="day-cell other-month ${hasRecord?'has-record':''}" data-date="${dateStr}">
+                html += `<button class="day-cell other-month ${hasRecord ? 'has-record' : ''}" data-date="${dateStr}">
                             ${i}
                             ${mood ? `<span class="mood-icon">${mood}</span>` : ''}
                         </button>`;
             }
 
-            for (let d=1; d<=daysInMonth; d++) {
+            // 本月
+            for (let d = 1; d <= daysInMonth; d++) {
                 const dateObj = new Date(year, month, d);
                 const dateStr = formatDate(dateObj);
                 const record = data.calendar[dateStr];
                 const hasRecord = !!record;
                 const mood = record?.mood || '';
                 const isToday = dateStr === todayStr;
-                const classes = `day-cell ${hasRecord?'has-record':''} ${isToday?'today':''}`;
+                const classes = `day-cell ${hasRecord ? 'has-record' : ''} ${isToday ? 'today' : ''}`;
                 html += `<button class="${classes}" data-date="${dateStr}">
                             ${d}
                             ${mood ? `<span class="mood-icon">${mood}</span>` : ''}
                         </button>`;
             }
 
+            // 下月填充
             const totalCells = firstDay + daysInMonth;
             const remaining = (7 - (totalCells % 7)) % 7;
-            for (let d=1; d<=remaining; d++) {
-                const dateObj = new Date(year, month+1, d);
+            for (let d = 1; d <= remaining; d++) {
+                const dateObj = new Date(year, month + 1, d);
                 const dateStr = formatDate(dateObj);
                 const record = data.calendar[dateStr];
                 const hasRecord = !!record;
                 const mood = record?.mood || '';
-                html += `<button class="day-cell other-month ${hasRecord?'has-record':''}" data-date="${dateStr}">
+                html += `<button class="day-cell other-month ${hasRecord ? 'has-record' : ''}" data-date="${dateStr}">
                             ${d}
                             ${mood ? `<span class="mood-icon">${mood}</span>` : ''}
                         </button>`;
@@ -980,12 +1261,14 @@
 
         calPrev.addEventListener('click', () => {
             calMonth--;
-            if (calMonth < 0) { calMonth=11; calYear--; }
+            if (calMonth < 0) { calMonth = 11;
+                calYear--; }
             renderCalendar();
         });
         calNext.addEventListener('click', () => {
             calMonth++;
-            if (calMonth > 11) { calMonth=0; calYear++; }
+            if (calMonth > 11) { calMonth = 0;
+                calYear++; }
             renderCalendar();
         });
         calToday.addEventListener('click', () => {
@@ -1001,7 +1284,7 @@
         function openRecordModal(dateStr) {
             currentRecordDate = dateStr;
             const dateObj = parseDate(dateStr);
-            recordModalTitle.textContent = `📝 ${dateObj.getFullYear()}年${dateObj.getMonth()+1}月${dateObj.getDate()}日`;
+            recordModalTitle.textContent = `📝 ${dateObj.getFullYear()}年${dateObj.getMonth() + 1}月${dateObj.getDate()}日`;
             const record = data.calendar[dateStr] || { text: '', mood: '' };
             recordText.value = record.text || '';
             selectedMood = record.mood || '';
@@ -1128,7 +1411,7 @@
             }
             let html = '';
             audios.forEach((a, i) => {
-                const sizeStr = a.size ? (a.size/1024).toFixed(1) + ' KB' : '';
+                const sizeStr = a.size ? (a.size / 1024).toFixed(1) + ' KB' : '';
                 html += `
                     <div class="audio-item" data-index="${i}">
                         <div class="audio-info">
@@ -1155,7 +1438,7 @@
 
         audioFileInput.addEventListener('change', (e) => {
             const files = e.target.files;
-            if (!files || files.length===0) return;
+            if (!files || files.length === 0) return;
             for (const file of files) {
                 if (!file.type.startsWith('audio/')) continue;
                 const reader = new FileReader();
@@ -1182,7 +1465,7 @@
             }
         });
 
-        console.log('💕 恋爱日记已加载，祝你们幸福！');
+        console.log('💕 恋爱日记 最终版已加载，祝你们幸福！');
     </script>
 </body>
 </html>
