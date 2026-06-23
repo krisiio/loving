@@ -5,18 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>💕 我们的恋爱日记</title>
 
-    <!-- 引入 Three.js -->
     <script type="importmap">
         {
             "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
             }
         }
     </script>
 
     <style>
-        /* ===== 全局样式（同前，保持不变） ===== */
+        /* ===== 全局样式 ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', 'PingFang SC', Roboto, sans-serif; background: #fff9f7; color: #4a3a3a; min-height: 100vh; overflow-x: hidden; }
         ::-webkit-scrollbar { width: 6px; }
@@ -61,7 +60,7 @@
         .section-title { font-size: 1.6rem; font-weight: 300; color: #c27a6e; margin-bottom: 18px; letter-spacing: 2px; display: flex; align-items: center; gap: 12px; }
         .section-title small { font-size: 0.9rem; color: #b2867c; font-weight: 300; }
 
-        /* 地球 */
+        /* 地球容器 */
         #earthContainer { position: relative; width: 100%; height: 600px; border-radius: 28px; overflow: hidden; background: #0b0e1a; box-shadow: 0 12px 48px rgba(0,0,0,0.15); border: 1px solid rgba(255,215,200,0.1); }
         #earthContainer canvas { display: block; width: 100% !important; height: 100% !important; }
         .earth-toolbar { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; background: rgba(0,0,0,0.55); backdrop-filter: blur(8px); padding: 10px 20px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.08); pointer-events: none; }
@@ -115,6 +114,7 @@
         .calendar-grid .day-cell.selected { background: #dba89a; color: #fff; font-weight: 500; }
         .calendar-grid .day-cell.selected.has-record::after { background: #fff; }
 
+        /* 记录弹窗 */
         .record-modal { position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; padding: 20px; }
         .record-modal.open { display: flex; }
         .record-modal .modal-box { background: #fffbf9; border-radius: 28px; max-width: 480px; width: 100%; padding: 28px 30px 24px; box-shadow: 0 24px 64px rgba(0,0,0,0.2); }
@@ -210,14 +210,14 @@
 </head>
 <body>
 
-    <!-- ===== 启动页（日期输入框为空） ===== -->
+    <!-- ===== 启动页 ===== -->
     <div id="startPage">
         <div class="logo">💕</div>
         <h1>我们的恋爱日记</h1>
         <p>记录与你有关的每一天</p>
         <div class="date-input-wrap">
             <label>📅 相遇之日</label>
-            <input type="date" id="startDateInput" />  <!-- 无默认值，留空 -->
+            <input type="date" id="startDateInput" />
             <button id="enterBtn">✨ 开启</button>
         </div>
         <div class="error-msg" id="startError"></div>
@@ -329,16 +329,26 @@
     <!-- JavaScript -->
     <!-- ============================================================ -->
     <script type="module">
-        import * as THREE from 'three';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        // ----- 导入 Three.js -----
+        let THREE, OrbitControls;
+        try {
+            const module = await import('three');
+            THREE = module;
+            const controlsModule = await import('three/addons/controls/OrbitControls.js');
+            OrbitControls = controlsModule.OrbitControls;
+            console.log('✅ Three.js 加载成功');
+        } catch (err) {
+            console.error('❌ Three.js 加载失败，地球功能不可用', err);
+        }
 
+        // ----- 存储与工具函数 -----
         const STORAGE_KEY = 'love_diary_data';
 
         function getDefaultData() {
             return {
                 startDate: '',
-                cities: {}, // { cityName: { lat, lng, photos: [], note: '' } }
-                calendar: {}, // { '2026-01-01': { text: '', mood: '😊' } }
+                cities: {},
+                calendar: {},
                 memos: { touched: [], angry: [], todo: [] },
                 audios: []
             };
@@ -370,17 +380,19 @@
             const day = String(d.getDate()).padStart(2,'0');
             return `${y}-${m}-${day}`;
         }
+
         function parseDate(str) {
             const parts = str.split('-').map(Number);
             return new Date(parts[0], parts[1]-1, parts[2]);
         }
+
         function getDaysDiff(d1, d2) {
             const t1 = new Date(d1.getFullYear(), d1.getMonth(), d1.getDate());
             const t2 = new Date(d2.getFullYear(), d2.getMonth(), d2.getDate());
             return Math.floor((t2 - t1) / (1000*60*60*24));
         }
 
-        // ===== 城市坐标（已包含所有国内城市及用户指定） =====
+        // ----- 城市坐标库（国内全覆盖 + 用户指定） -----
         const CITY_COORDS = {
             '北京':{lat:39.9,lng:116.4},'天津':{lat:39.1,lng:117.2},'上海':{lat:31.2,lng:121.5},'重庆':{lat:29.6,lng:106.5},
             '石家庄':{lat:38.0,lng:114.5},'太原':{lat:37.9,lng:112.6},'呼和浩特':{lat:40.8,lng:111.7},'沈阳':{lat:41.8,lng:123.4},
@@ -469,10 +481,10 @@
             );
         }
 
-        // ===== 数据 =====
+        // ----- 数据 -----
         let data = loadData();
 
-        // ===== DOM =====
+        // ----- DOM 引用 -----
         const $ = sel => document.querySelector(sel);
         const $$ = sel => document.querySelectorAll(sel);
 
@@ -496,7 +508,6 @@
         const calToday = $('#calToday');
 
         const memoGrid = $('#memoGrid');
-
         const audioFileInput = $('#audioFileInput');
         const audioList = $('#audioList');
 
@@ -517,14 +528,13 @@
         const recordSaveBtn = $('#recordSaveBtn');
         const moodSelector = $('#moodSelector');
 
-        // ===== 启动 =====
+        // ----- 启动验证 -----
         if (data.startDate) {
             startPage.classList.add('hidden');
             app.classList.add('show');
             updateDaysDisplay();
             initAll();
         } else {
-            // 输入框为空，没有默认值
             startDateInput.value = '';
         }
 
@@ -563,17 +573,40 @@
                 sections.forEach(s => s.classList.remove('active'));
                 const sec = document.getElementById(target);
                 if (sec) sec.classList.add('active');
-                if (target === 'section-earth') setTimeout(() => onEarthResize(), 100);
+                if (target === 'section-earth') {
+                    setTimeout(() => { if (typeof onEarthResize === 'function') onEarthResize(); }, 200);
+                }
             });
         });
 
+        // ----- 初始化所有功能 -----
         function initAll() {
-            initEarth();
-            renderCalendar();
-            renderMemos();
-            renderAudios();
+            try {
+                renderCalendar();
+                renderMemos();
+                renderAudios();
+                console.log('✅ 基础功能初始化成功');
+            } catch (err) {
+                console.error('❌ 基础功能初始化失败', err);
+            }
+
+            if (typeof THREE !== 'undefined' && THREE !== null) {
+                try {
+                    initEarth();
+                    console.log('✅ 地球初始化成功');
+                } catch (err) {
+                    console.error('❌ 地球初始化失败', err);
+                    earthContainer.innerHTML = '<div style="color:rgba(255,255,255,0.5);text-align:center;padding:40px;">🌍 地球加载失败，请刷新重试</div>';
+                }
+            } else {
+                console.warn('⚠️ Three.js 未加载，跳过地球');
+                earthContainer.innerHTML = '<div style="color:rgba(255,255,255,0.5);text-align:center;padding:40px;">🌍 地球功能暂不可用（Three.js 加载失败）</div>';
+            }
+
             setInterval(updateDaysDisplay, 60000);
-            window.addEventListener('resize', onEarthResize);
+            window.addEventListener('resize', () => {
+                if (typeof onEarthResize === 'function') onEarthResize();
+            });
         }
 
         // ============================================================
@@ -582,11 +615,15 @@
         let scene, camera, renderer, controls, earthGroup;
         let cityMarkers = [];
         let earthInitialized = false;
-        let earthAnimationId = null;
         let currentCityForPhotos = null;
 
         function initEarth() {
             if (earthInitialized) return;
+            if (!THREE || !OrbitControls) {
+                console.warn('Three.js 未加载，无法初始化地球');
+                return;
+            }
+
             const container = earthContainer;
             const w = container.clientWidth || 600;
             const h = container.clientHeight || 600;
@@ -600,7 +637,10 @@
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(w, h);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            container.insertBefore(renderer.domElement, container.firstChild);
+            const toolbar = container.querySelector('.earth-toolbar');
+            const oldCanvas = container.querySelector('canvas');
+            if (oldCanvas) oldCanvas.remove();
+            container.insertBefore(renderer.domElement, toolbar);
 
             controls = new OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
@@ -611,6 +651,7 @@
             controls.autoRotate = true;
             controls.autoRotateSpeed = 0.4;
 
+            // 灯光
             const ambient = new THREE.AmbientLight(0x404060, 0.6);
             scene.add(ambient);
             const dirLight = new THREE.DirectionalLight(0xffffff, 1.8);
@@ -620,6 +661,7 @@
             backLight.position.set(-3,-1,-4);
             scene.add(backLight);
 
+            // 星星
             const starsGeo = new THREE.BufferGeometry();
             const starCount = 2000;
             const starPos = new Float32Array(starCount*3);
@@ -629,6 +671,7 @@
             const stars = new THREE.Points(starsGeo, starMat);
             scene.add(stars);
 
+            // 地球
             const radius = 1.2;
             const geo = new THREE.SphereGeometry(radius, 64, 64);
             const textureLoader = new THREE.TextureLoader();
@@ -643,6 +686,7 @@
             earthGroup.add(earth);
             scene.add(earthGroup);
 
+            // 光晕
             const glowGeo = new THREE.SphereGeometry(radius*1.01, 48, 48);
             const glowMat = new THREE.MeshBasicMaterial({
                 color: 0x4488ff,
@@ -658,6 +702,7 @@
             earthInitialized = true;
             animateEarth();
 
+            // 点击事件
             const raycaster = new THREE.Raycaster();
             const mouse = new THREE.Vector2();
             renderer.domElement.addEventListener('click', (event) => {
@@ -686,13 +731,13 @@
 
         function animateEarth() {
             if (!earthInitialized) return;
-            earthAnimationId = requestAnimationFrame(animateEarth);
+            requestAnimationFrame(animateEarth);
             controls.update();
             renderer.render(scene, camera);
         }
 
         function onEarthResize() {
-            if (!earthInitialized) return;
+            if (!earthInitialized || !renderer) return;
             const container = earthContainer;
             const w = container.clientWidth || 600;
             const h = container.clientHeight || 600;
@@ -702,6 +747,7 @@
         }
 
         function loadCityMarkers() {
+            if (!earthGroup) return;
             cityMarkers.forEach(m => { if (m.parent) m.parent.remove(m); });
             cityMarkers = [];
             const radius = 1.2;
@@ -771,7 +817,7 @@
             controls.autoRotate = true;
         }
 
-        // ===== 照片弹窗 =====
+        // ----- 照片弹窗 -----
         function openPhotoModal(cityName) {
             currentCityForPhotos = cityName;
             photoModalTitle.textContent = `📍 ${cityName}`;
@@ -781,12 +827,12 @@
             }
             renderPhotos(cityName);
             photoModal.classList.add('open');
-            controls.autoRotate = false;
+            if (controls) controls.autoRotate = false;
         }
 
         function closePhotoModal() {
             photoModal.classList.remove('open');
-            controls.autoRotate = true;
+            if (controls) controls.autoRotate = true;
             currentCityForPhotos = null;
         }
 
@@ -874,7 +920,6 @@
             const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month+1, 0).getDate();
             const daysInPrev = new Date(year, month, 0).getDate();
-
             const today = new Date();
             const todayStr = formatDate(today);
 
@@ -1129,7 +1174,7 @@
             audioFileInput.value = '';
         });
 
-        // ===== ESC =====
+        // ----- ESC 关闭弹窗 -----
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 if (photoModal.classList.contains('open')) closePhotoModal();
