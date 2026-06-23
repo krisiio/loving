@@ -16,1002 +16,219 @@
     </script>
 
     <style>
-        /* ===== 全局样式 ===== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Segoe UI', 'PingFang SC', Roboto, 'Helvetica Neue', sans-serif;
-            background: #fff9f7;
-            color: #4a3a3a;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f5ecea;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #e8c4b8;
-            border-radius: 8px;
-        }
+        /* ===== 全局样式（保持不变） ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', 'PingFang SC', Roboto, sans-serif; background: #fff9f7; color: #4a3a3a; min-height: 100vh; overflow-x: hidden; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f5ecea; }
+        ::-webkit-scrollbar-thumb { background: #e8c4b8; border-radius: 8px; }
 
-        /* ===== 启动页 ===== */
-        #startPage {
-            position: fixed;
-            inset: 0;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(145deg, #fceae8, #fff5f0);
-            transition: opacity 0.8s ease, transform 0.8s ease;
-        }
-        #startPage.hidden {
-            opacity: 0;
-            transform: scale(1.05);
-            pointer-events: none;
-        }
-        #startPage .logo {
-            font-size: 4rem;
-            margin-bottom: 0.2rem;
-            animation: float 3s ease-in-out infinite;
-        }
-        @keyframes float {
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-12px);
-            }
-        }
-        #startPage h1 {
-            font-size: 2.4rem;
-            font-weight: 300;
-            color: #c27a6e;
-            letter-spacing: 6px;
-            margin-bottom: 0.5rem;
-        }
-        #startPage p {
-            color: #b2867c;
-            font-size: 1rem;
-            margin-bottom: 2rem;
-            letter-spacing: 2px;
-        }
-        #startPage .date-input-wrap {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(8px);
-            padding: 18px 30px;
-            border-radius: 60px;
-            box-shadow: 0 8px 32px rgba(180, 120, 100, 0.15);
-            border: 1px solid rgba(255, 215, 200, 0.5);
-        }
-        #startPage .date-input-wrap label {
-            font-size: 1rem;
-            color: #a66b5e;
-            font-weight: 500;
-        }
-        #startPage .date-input-wrap input[type="date"] {
-            border: none;
-            background: transparent;
-            font-size: 1rem;
-            padding: 8px 12px;
-            border-radius: 30px;
-            color: #4a3a3a;
-            outline: 2px solid #eccfc6;
-            transition: 0.2s;
-            font-family: inherit;
-        }
-        #startPage .date-input-wrap input[type="date"]:focus {
-            outline-color: #dba89a;
-        }
-        #startPage .date-input-wrap button {
-            background: #dba89a;
-            border: none;
-            color: #fff;
-            font-size: 1rem;
-            padding: 8px 28px;
-            border-radius: 40px;
-            cursor: pointer;
-            transition: 0.25s;
-            font-weight: 500;
-            letter-spacing: 1px;
-            font-family: inherit;
-        }
-        #startPage .date-input-wrap button:hover {
-            background: #c99181;
-            transform: scale(1.02);
-        }
-        #startPage .error-msg {
-            color: #d47a6a;
-            font-size: 0.9rem;
-            margin-top: 12px;
-            min-height: 1.5rem;
-        }
+        /* 启动页 */
+        #startPage { position: fixed; inset: 0; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(145deg, #fceae8, #fff5f0); transition: opacity 0.8s ease, transform 0.8s ease; }
+        #startPage.hidden { opacity: 0; transform: scale(1.05); pointer-events: none; }
+        #startPage .logo { font-size: 4rem; margin-bottom: 0.2rem; animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+        #startPage h1 { font-size: 2.4rem; font-weight: 300; color: #c27a6e; letter-spacing: 6px; margin-bottom: 0.5rem; }
+        #startPage p { color: #b2867c; font-size: 1rem; margin-bottom: 2rem; letter-spacing: 2px; }
+        #startPage .date-input-wrap { display: flex; align-items: center; gap: 14px; background: rgba(255,255,255,0.7); backdrop-filter: blur(8px); padding: 18px 30px; border-radius: 60px; box-shadow: 0 8px 32px rgba(180,120,100,0.15); border: 1px solid rgba(255,215,200,0.5); }
+        #startPage .date-input-wrap label { font-size: 1rem; color: #a66b5e; font-weight: 500; }
+        #startPage .date-input-wrap input[type="date"] { border: none; background: transparent; font-size: 1rem; padding: 8px 12px; border-radius: 30px; color: #4a3a3a; outline: 2px solid #eccfc6; transition: 0.2s; font-family: inherit; }
+        #startPage .date-input-wrap input[type="date"]:focus { outline-color: #dba89a; }
+        #startPage .date-input-wrap button { background: #dba89a; border: none; color: #fff; font-size: 1rem; padding: 8px 28px; border-radius: 40px; cursor: pointer; transition: 0.25s; font-weight: 500; letter-spacing: 1px; font-family: inherit; }
+        #startPage .date-input-wrap button:hover { background: #c99181; transform: scale(1.02); }
+        #startPage .error-msg { color: #d47a6a; font-size: 0.9rem; margin-top: 12px; min-height: 1.5rem; }
 
-        /* ===== 主容器 ===== */
-        #app {
-            display: none;
-            flex-direction: column;
-            min-height: 100vh;
-            opacity: 0;
-            transition: opacity 0.6s ease;
-        }
-        #app.show {
-            display: flex;
-            opacity: 1;
-        }
+        /* 主容器 */
+        #app { display: none; flex-direction: column; min-height: 100vh; opacity: 0; transition: opacity 0.6s ease; }
+        #app.show { display: flex; opacity: 1; }
 
-        /* ===== 顶栏 ===== */
-        .topbar {
-            background: rgba(255, 248, 245, 0.85);
-            backdrop-filter: blur(12px);
-            padding: 14px 30px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 10px 20px;
-            border-bottom: 1px solid rgba(220, 180, 165, 0.2);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        .topbar .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.3rem;
-            font-weight: 400;
-            color: #c27a6e;
-        }
-        .topbar .brand span {
-            font-weight: 300;
-            font-size: 0.9rem;
-            color: #b2867c;
-            margin-left: 4px;
-        }
-        .topbar .days {
-            background: #f5e3dd;
-            padding: 5px 18px;
-            border-radius: 30px;
-            font-size: 0.95rem;
-            color: #a66b5e;
-            white-space: nowrap;
-        }
-        .topbar .days strong {
-            font-weight: 600;
-            color: #c27a6e;
-        }
-        .topbar .nav {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-        .topbar .nav button {
-            background: transparent;
-            border: none;
-            padding: 6px 16px;
-            border-radius: 30px;
-            font-size: 0.9rem;
-            color: #a66b5e;
-            cursor: pointer;
-            transition: 0.2s;
-            font-family: inherit;
-            font-weight: 400;
-            white-space: nowrap;
-        }
-        .topbar .nav button:hover {
-            background: #f5e3dd;
-        }
-        .topbar .nav button.active {
-            background: #dba89a;
-            color: #fff;
-            font-weight: 500;
-            box-shadow: 0 4px 12px rgba(200, 140, 120, 0.25);
-        }
+        /* 顶栏 */
+        .topbar { background: rgba(255,248,245,0.85); backdrop-filter: blur(12px); padding: 14px 30px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px 20px; border-bottom: 1px solid rgba(220,180,165,0.2); position: sticky; top: 0; z-index: 100; }
+        .topbar .brand { display: flex; align-items: center; gap: 10px; font-size: 1.3rem; font-weight: 400; color: #c27a6e; }
+        .topbar .brand span { font-weight: 300; font-size: 0.9rem; color: #b2867c; margin-left: 4px; }
+        .topbar .days { background: #f5e3dd; padding: 5px 18px; border-radius: 30px; font-size: 0.95rem; color: #a66b5e; white-space: nowrap; }
+        .topbar .days strong { font-weight: 600; color: #c27a6e; }
+        .topbar .nav { display: flex; gap: 6px; flex-wrap: wrap; }
+        .topbar .nav button { background: transparent; border: none; padding: 6px 16px; border-radius: 30px; font-size: 0.9rem; color: #a66b5e; cursor: pointer; transition: 0.2s; font-family: inherit; font-weight: 400; white-space: nowrap; }
+        .topbar .nav button:hover { background: #f5e3dd; }
+        .topbar .nav button.active { background: #dba89a; color: #fff; font-weight: 500; box-shadow: 0 4px 12px rgba(200,140,120,0.25); }
 
-        /* ===== 板块容器 ===== */
-        .sections {
-            flex: 1;
-            padding: 24px 28px 40px;
-            max-width: 1400px;
-            margin: 0 auto;
-            width: 100%;
-        }
-        .section {
-            display: none;
-            animation: fadeUp 0.4s ease;
-        }
-        .section.active {
-            display: block;
-        }
-        @keyframes fadeUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+        /* 板块容器 */
+        .sections { flex: 1; padding: 24px 28px 40px; max-width: 1400px; margin: 0 auto; width: 100%; }
+        .section { display: none; animation: fadeUp 0.4s ease; }
+        .section.active { display: block; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .section-title { font-size: 1.6rem; font-weight: 300; color: #c27a6e; margin-bottom: 18px; letter-spacing: 2px; display: flex; align-items: center; gap: 12px; }
+        .section-title small { font-size: 0.9rem; color: #b2867c; font-weight: 300; }
 
-        .section-title {
-            font-size: 1.6rem;
-            font-weight: 300;
-            color: #c27a6e;
-            margin-bottom: 18px;
-            letter-spacing: 2px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .section-title small {
-            font-size: 0.9rem;
-            color: #b2867c;
-            font-weight: 300;
-        }
+        /* 地球 */
+        #earthContainer { position: relative; width: 100%; height: 600px; border-radius: 28px; overflow: hidden; background: #0b0e1a; box-shadow: 0 12px 48px rgba(0,0,0,0.15); border: 1px solid rgba(255,215,200,0.1); }
+        #earthContainer canvas { display: block; width: 100% !important; height: 100% !important; }
+        .earth-toolbar { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; background: rgba(0,0,0,0.55); backdrop-filter: blur(8px); padding: 10px 20px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.08); pointer-events: none; }
+        .earth-toolbar>* { pointer-events: auto; }
+        .earth-toolbar input[type="text"] { padding: 6px 16px; border-radius: 30px; border: none; background: rgba(255,255,255,0.12); color: #fff; font-size: 0.85rem; outline: 1px solid rgba(255,255,255,0.1); transition: 0.2s; width: 140px; font-family: inherit; }
+        .earth-toolbar input[type="text"]::placeholder { color: rgba(255,255,255,0.4); }
+        .earth-toolbar input[type="text"]:focus { outline-color: #dba89a; background: rgba(255,255,255,0.18); }
+        .earth-toolbar button { padding: 6px 20px; border-radius: 30px; border: none; background: #dba89a; color: #fff; cursor: pointer; font-size: 0.85rem; transition: 0.2s; font-family: inherit; font-weight: 400; }
+        .earth-toolbar button:hover { background: #c99181; transform: scale(1.03); }
+        .earth-toolbar .hint { color: rgba(255,255,255,0.5); font-size: 0.75rem; display: flex; align-items: center; gap: 4px; }
 
-        /* ===== 板块一：地球 ===== */
-        #earthContainer {
-            position: relative;
-            width: 100%;
-            height: 600px;
-            border-radius: 28px;
-            overflow: hidden;
-            background: #0b0e1a;
-            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
-            border: 1px solid rgba(255, 215, 200, 0.1);
-        }
-        #earthContainer canvas {
-            display: block;
-            width: 100% !important;
-            height: 100% !important;
-        }
-        .earth-toolbar {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            justify-content: center;
-            background: rgba(0, 0, 0, 0.55);
-            backdrop-filter: blur(8px);
-            padding: 10px 20px;
-            border-radius: 50px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            pointer-events: none;
-        }
-        .earth-toolbar>* {
-            pointer-events: auto;
-        }
-        .earth-toolbar input[type="text"] {
-            padding: 6px 16px;
-            border-radius: 30px;
-            border: none;
-            background: rgba(255, 255, 255, 0.12);
-            color: #fff;
-            font-size: 0.85rem;
-            outline: 1px solid rgba(255, 255, 255, 0.1);
-            transition: 0.2s;
-            width: 140px;
-            font-family: inherit;
-        }
-        .earth-toolbar input[type="text"]::placeholder {
-            color: rgba(255, 255, 255, 0.4);
-        }
-        .earth-toolbar input[type="text"]:focus {
-            outline-color: #dba89a;
-            background: rgba(255, 255, 255, 0.18);
-        }
-        .earth-toolbar button {
-            padding: 6px 20px;
-            border-radius: 30px;
-            border: none;
-            background: #dba89a;
-            color: #fff;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: 0.2s;
-            font-family: inherit;
-            font-weight: 400;
-        }
-        .earth-toolbar button:hover {
-            background: #c99181;
-            transform: scale(1.03);
-        }
-        .earth-toolbar .hint {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.75rem;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
+        /* 照片弹窗（增加文字备注） */
+        .photo-modal { position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; padding: 20px; }
+        .photo-modal.open { display: flex; }
+        .photo-modal .modal-box { background: #fffbf9; border-radius: 28px; max-width: 600px; width: 100%; max-height: 80vh; padding: 28px 30px 24px; box-shadow: 0 24px 64px rgba(0,0,0,0.3); overflow-y: auto; position: relative; }
+        .photo-modal .modal-box h3 { font-weight: 400; color: #c27a6e; margin-bottom: 16px; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        .photo-modal .modal-box .close-btn { position: absolute; top: 16px; right: 20px; font-size: 1.8rem; cursor: pointer; color: #b2867c; background: none; border: none; transition: 0.2s; line-height: 1; }
+        .photo-modal .modal-box .close-btn:hover { color: #c27a6e; transform: rotate(90deg); }
+        .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px,1fr)); gap: 12px; margin: 14px 0 16px; }
+        .photo-grid .photo-item { position: relative; border-radius: 16px; overflow: hidden; aspect-ratio: 1/1; background: #f5ecea; border: 1px solid #f0e0da; }
+        .photo-grid .photo-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .photo-grid .photo-item .del-btn { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%; width: 26px; height: 26px; font-size: 0.8rem; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; line-height: 1; }
+        .photo-grid .photo-item .del-btn:hover { background: #d47a6a; transform: scale(1.1); }
+        .photo-upload { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 6px; }
+        .photo-upload label { background: #f5e3dd; padding: 6px 18px; border-radius: 30px; cursor: pointer; font-size: 0.85rem; color: #a66b5e; transition: 0.2s; border: 1px dashed #dba89a; }
+        .photo-upload label:hover { background: #ecd9d2; }
+        .photo-upload input[type="file"] { display: none; }
+        .photo-upload .empty-hint { color: #b2867c; font-size: 0.9rem; padding: 8px 0; }
 
-        /* 城市照片弹窗 */
-        .photo-modal {
-            position: fixed;
-            inset: 0;
-            z-index: 500;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(8px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .photo-modal.open {
-            display: flex;
-        }
-        .photo-modal .modal-box {
-            background: #fffbf9;
-            border-radius: 28px;
-            max-width: 600px;
-            width: 100%;
-            max-height: 80vh;
-            padding: 28px 30px 24px;
-            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.3);
-            overflow-y: auto;
-            position: relative;
-        }
-        .photo-modal .modal-box h3 {
-            font-weight: 400;
-            color: #c27a6e;
-            margin-bottom: 16px;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .photo-modal .modal-box .close-btn {
-            position: absolute;
-            top: 16px;
-            right: 20px;
-            font-size: 1.8rem;
-            cursor: pointer;
-            color: #b2867c;
-            background: none;
-            border: none;
-            transition: 0.2s;
-            line-height: 1;
-        }
-        .photo-modal .modal-box .close-btn:hover {
-            color: #c27a6e;
-            transform: rotate(90deg);
-        }
-        .photo-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 12px;
-            margin: 14px 0 16px;
-        }
-        .photo-grid .photo-item {
-            position: relative;
-            border-radius: 16px;
-            overflow: hidden;
-            aspect-ratio: 1/1;
-            background: #f5ecea;
-            border: 1px solid #f0e0da;
-        }
-        .photo-grid .photo-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-        .photo-grid .photo-item .del-btn {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            background: rgba(0, 0, 0, 0.6);
-            color: #fff;
-            border: none;
-            border-radius: 50%;
-            width: 26px;
-            height: 26px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            line-height: 1;
-        }
-        .photo-grid .photo-item .del-btn:hover {
-            background: #d47a6a;
-            transform: scale(1.1);
-        }
-        .photo-upload {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            flex-wrap: wrap;
-            margin-top: 6px;
-        }
-        .photo-upload label {
-            background: #f5e3dd;
-            padding: 6px 18px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            color: #a66b5e;
-            transition: 0.2s;
-            border: 1px dashed #dba89a;
-        }
-        .photo-upload label:hover {
-            background: #ecd9d2;
-        }
-        .photo-upload input[type="file"] {
-            display: none;
-        }
-        .photo-upload .empty-hint {
-            color: #b2867c;
-            font-size: 0.9rem;
-            padding: 8px 0;
-        }
+        /* 城市文字备注 */
+        .city-note-area { margin-top: 12px; }
+        .city-note-area textarea { width: 100%; border: 1px solid #f0e0da; border-radius: 16px; padding: 10px 14px; font-size: 0.9rem; font-family: inherit; resize: vertical; min-height: 60px; transition: 0.2s; background: #fcf8f6; color: #4a3a3a; }
+        .city-note-area textarea:focus { outline: 2px solid #dba89a; border-color: transparent; }
+        .city-note-area .note-save-btn { margin-top: 6px; padding: 4px 18px; border-radius: 30px; border: none; background: #dba89a; color: #fff; cursor: pointer; font-size: 0.8rem; transition: 0.2s; font-family: inherit; }
+        .city-note-area .note-save-btn:hover { background: #c99181; }
 
-        /* ===== 板块二：日历 ===== */
-        .calendar-wrap {
-            background: #fffbf9;
-            border-radius: 28px;
-            padding: 24px 28px;
-            box-shadow: 0 8px 32px rgba(180, 120, 100, 0.08);
-            border: 1px solid #f0e0da;
-            max-width: 820px;
-            margin: 0 auto;
-        }
-        .calendar-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 18px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .calendar-header .year-month {
-            font-size: 1.3rem;
-            font-weight: 400;
-            color: #c27a6e;
-        }
-        .calendar-header .nav-btns {
-            display: flex;
-            gap: 6px;
-        }
-        .calendar-header .nav-btns button {
-            background: #f5ecea;
-            border: none;
-            padding: 4px 14px;
-            border-radius: 30px;
-            font-size: 0.9rem;
-            color: #a66b5e;
-            cursor: pointer;
-            transition: 0.2s;
-            font-family: inherit;
-        }
-        .calendar-header .nav-btns button:hover {
-            background: #e8d3cb;
-        }
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 4px;
-        }
-        .calendar-grid .week-label {
-            text-align: center;
-            font-size: 0.8rem;
-            color: #b2867c;
-            padding: 6px 0;
-            font-weight: 500;
-        }
-        .calendar-grid .day-cell {
-            aspect-ratio: 1/1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: 0.2s;
-            font-size: 0.95rem;
-            color: #4a3a3a;
-            position: relative;
-            background: transparent;
-            border: none;
-            font-family: inherit;
-            width: 100%;
-        }
-        .calendar-grid .day-cell:hover {
-            background: #f5ecea;
-        }
-        .calendar-grid .day-cell.other-month {
-            color: #ccc0ba;
-        }
-        .calendar-grid .day-cell.has-record::after {
-            content: '';
-            position: absolute;
-            bottom: 4px;
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            background: #dba89a;
-        }
-        .calendar-grid .day-cell.today {
-            outline: 2px solid #dba89a;
-            outline-offset: -2px;
-        }
-        .calendar-grid .day-cell.selected {
-            background: #dba89a;
-            color: #fff;
-            font-weight: 500;
-        }
-        .calendar-grid .day-cell.selected.has-record::after {
-            background: #fff;
-        }
+        /* 日历 */
+        .calendar-wrap { background: #fffbf9; border-radius: 28px; padding: 24px 28px; box-shadow: 0 8px 32px rgba(180,120,100,0.08); border: 1px solid #f0e0da; max-width: 820px; margin: 0 auto; }
+        .calendar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
+        .calendar-header .year-month { font-size: 1.3rem; font-weight: 400; color: #c27a6e; }
+        .calendar-header .nav-btns { display: flex; gap: 6px; }
+        .calendar-header .nav-btns button { background: #f5ecea; border: none; padding: 4px 14px; border-radius: 30px; font-size: 0.9rem; color: #a66b5e; cursor: pointer; transition: 0.2s; font-family: inherit; }
+        .calendar-header .nav-btns button:hover { background: #e8d3cb; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+        .calendar-grid .week-label { text-align: center; font-size: 0.8rem; color: #b2867c; padding: 6px 0; font-weight: 500; }
+        .calendar-grid .day-cell { aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; transition: 0.2s; font-size: 0.95rem; color: #4a3a3a; position: relative; background: transparent; border: none; font-family: inherit; width: 100%; }
+        .calendar-grid .day-cell:hover { background: #f5ecea; }
+        .calendar-grid .day-cell.other-month { color: #ccc0ba; }
+        .calendar-grid .day-cell .mood-icon { font-size: 0.7rem; line-height: 1; margin-top: 1px; }
+        .calendar-grid .day-cell.has-record::after { content: ''; position: absolute; bottom: 4px; width: 5px; height: 5px; border-radius: 50%; background: #dba89a; }
+        .calendar-grid .day-cell.today { outline: 2px solid #dba89a; outline-offset: -2px; }
+        .calendar-grid .day-cell.selected { background: #dba89a; color: #fff; font-weight: 500; }
+        .calendar-grid .day-cell.selected.has-record::after { background: #fff; }
 
-        /* 日历记录弹窗 */
-        .record-modal {
-            position: fixed;
-            inset: 0;
-            z-index: 500;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(6px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .record-modal.open {
-            display: flex;
-        }
-        .record-modal .modal-box {
-            background: #fffbf9;
-            border-radius: 28px;
-            max-width: 480px;
-            width: 100%;
-            padding: 28px 30px 24px;
-            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
-        }
-        .record-modal .modal-box h3 {
-            font-weight: 400;
-            color: #c27a6e;
-            margin-bottom: 14px;
-            font-size: 1.1rem;
-        }
-        .record-modal .modal-box textarea {
-            width: 100%;
-            border: 1px solid #f0e0da;
-            border-radius: 16px;
-            padding: 14px 16px;
-            font-size: 0.95rem;
-            font-family: inherit;
-            resize: vertical;
-            min-height: 100px;
-            transition: 0.2s;
-            background: #fcf8f6;
-            color: #4a3a3a;
-        }
-        .record-modal .modal-box textarea:focus {
-            outline: 2px solid #dba89a;
-            border-color: transparent;
-        }
-        .record-modal .modal-box .btn-row {
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-            margin-top: 16px;
-        }
-        .record-modal .modal-box .btn-row button {
-            padding: 8px 28px;
-            border-radius: 30px;
-            border: none;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: 0.2s;
-            font-family: inherit;
-        }
-        .record-modal .modal-box .btn-row .save-btn {
-            background: #dba89a;
-            color: #fff;
-        }
-        .record-modal .modal-box .btn-row .save-btn:hover {
-            background: #c99181;
-        }
-        .record-modal .modal-box .btn-row .del-record-btn {
-            background: #f5ecea;
-            color: #a66b5e;
-        }
-        .record-modal .modal-box .btn-row .del-record-btn:hover {
-            background: #f0dcd4;
-        }
-        .record-modal .modal-box .btn-row .close-modal-btn {
-            background: transparent;
-            color: #b2867c;
-        }
-        .record-modal .modal-box .btn-row .close-modal-btn:hover {
-            background: #f5ecea;
-        }
+        /* 记录弹窗（含心情） */
+        .record-modal { position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; padding: 20px; }
+        .record-modal.open { display: flex; }
+        .record-modal .modal-box { background: #fffbf9; border-radius: 28px; max-width: 480px; width: 100%; padding: 28px 30px 24px; box-shadow: 0 24px 64px rgba(0,0,0,0.2); }
+        .record-modal .modal-box h3 { font-weight: 400; color: #c27a6e; margin-bottom: 14px; font-size: 1.1rem; }
+        .record-modal .modal-box textarea { width: 100%; border: 1px solid #f0e0da; border-radius: 16px; padding: 14px 16px; font-size: 0.95rem; font-family: inherit; resize: vertical; min-height: 80px; transition: 0.2s; background: #fcf8f6; color: #4a3a3a; }
+        .record-modal .modal-box textarea:focus { outline: 2px solid #dba89a; border-color: transparent; }
+        .record-modal .modal-box .mood-selector { display: flex; gap: 10px; margin: 12px 0; flex-wrap: wrap; }
+        .record-modal .modal-box .mood-selector button { font-size: 1.6rem; background: none; border: 2px solid transparent; border-radius: 50%; width: 48px; height: 48px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+        .record-modal .modal-box .mood-selector button:hover { background: #f5ecea; transform: scale(1.1); }
+        .record-modal .modal-box .mood-selector button.active { border-color: #dba89a; background: #f5ecea; }
+        .record-modal .modal-box .btn-row { display: flex; gap: 12px; justify-content: flex-end; margin-top: 16px; }
+        .record-modal .modal-box .btn-row button { padding: 8px 28px; border-radius: 30px; border: none; font-size: 0.9rem; cursor: pointer; transition: 0.2s; font-family: inherit; }
+        .record-modal .modal-box .btn-row .save-btn { background: #dba89a; color: #fff; }
+        .record-modal .modal-box .btn-row .save-btn:hover { background: #c99181; }
+        .record-modal .modal-box .btn-row .del-record-btn { background: #f5ecea; color: #a66b5e; }
+        .record-modal .modal-box .btn-row .del-record-btn:hover { background: #f0dcd4; }
+        .record-modal .modal-box .btn-row .close-modal-btn { background: transparent; color: #b2867c; }
+        .record-modal .modal-box .btn-row .close-modal-btn:hover { background: #f5ecea; }
 
-        /* ===== 板块三：碎碎念 ===== */
-        .memo-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 24px;
-        }
-        .memo-card {
-            background: #fffbf9;
-            border-radius: 24px;
-            padding: 22px 24px 18px;
-            box-shadow: 0 6px 24px rgba(180, 120, 100, 0.06);
-            border: 1px solid #f0e0da;
-            transition: 0.2s;
-            display: flex;
-            flex-direction: column;
-        }
-        .memo-card:hover {
-            border-color: #e8cdc2;
-            box-shadow: 0 8px 28px rgba(180, 120, 100, 0.1);
-        }
-        .memo-card .memo-title {
-            font-size: 1.05rem;
-            font-weight: 500;
-            color: #c27a6e;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-        .memo-card .memo-title .icon {
-            font-size: 1.3rem;
-        }
-        .memo-card .memo-list {
-            flex: 1;
-            list-style: none;
-            padding: 0;
-            margin: 0 0 12px;
-            max-height: 260px;
-            overflow-y: auto;
-        }
-        .memo-card .memo-list li {
-            padding: 8px 12px;
-            margin-bottom: 4px;
-            border-radius: 14px;
-            background: #fcf8f6;
-            font-size: 0.9rem;
-            color: #4a3a3a;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-            word-break: break-word;
-            border: 1px solid transparent;
-            transition: 0.15s;
-        }
-        .memo-card .memo-list li:hover {
-            border-color: #f0e0da;
-            background: #faf3f0;
-        }
-        .memo-card .memo-list li .del-memo {
-            background: none;
-            border: none;
-            color: #ccc0ba;
-            cursor: pointer;
-            font-size: 0.9rem;
-            padding: 0 4px;
-            transition: 0.2s;
-            flex-shrink: 0;
-        }
-        .memo-card .memo-list li .del-memo:hover {
-            color: #d47a6a;
-            transform: scale(1.2);
-        }
-        .memo-card .memo-list .empty-hint {
-            color: #ccc0ba;
-            font-size: 0.85rem;
-            padding: 16px 0;
-            text-align: center;
-        }
-        .memo-card .memo-input-row {
-            display: flex;
-            gap: 8px;
-            margin-top: 4px;
-        }
-        .memo-card .memo-input-row input {
-            flex: 1;
-            padding: 8px 14px;
-            border-radius: 30px;
-            border: 1px solid #f0e0da;
-            background: #fcf8f6;
-            font-size: 0.85rem;
-            font-family: inherit;
-            transition: 0.2s;
-            color: #4a3a3a;
-            outline: none;
-        }
-        .memo-card .memo-input-row input:focus {
-            border-color: #dba89a;
-            outline: 2px solid #f5e3dd;
-        }
-        .memo-card .memo-input-row button {
-            padding: 6px 18px;
-            border-radius: 30px;
-            border: none;
-            background: #dba89a;
-            color: #fff;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: 0.2s;
-            font-family: inherit;
-            flex-shrink: 0;
-        }
-        .memo-card .memo-input-row button:hover {
-            background: #c99181;
-        }
+        /* 碎碎念 */
+        .memo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 24px; }
+        .memo-card { background: #fffbf9; border-radius: 24px; padding: 22px 24px 18px; box-shadow: 0 6px 24px rgba(180,120,100,0.06); border: 1px solid #f0e0da; transition: 0.2s; display: flex; flex-direction: column; }
+        .memo-card:hover { border-color: #e8cdc2; box-shadow: 0 8px 28px rgba(180,120,100,0.1); }
+        .memo-card .memo-title { font-size: 1.05rem; font-weight: 500; color: #c27a6e; display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .memo-card .memo-title .icon { font-size: 1.3rem; }
+        .memo-card .memo-list { flex: 1; list-style: none; padding: 0; margin: 0 0 12px; max-height: 260px; overflow-y: auto; }
+        .memo-card .memo-list li { padding: 8px 12px; margin-bottom: 4px; border-radius: 14px; background: #fcf8f6; font-size: 0.9rem; color: #4a3a3a; display: flex; justify-content: space-between; align-items: center; gap: 10px; word-break: break-word; border: 1px solid transparent; transition: 0.15s; }
+        .memo-card .memo-list li:hover { border-color: #f0e0da; background: #faf3f0; }
+        .memo-card .memo-list li .del-memo { background: none; border: none; color: #ccc0ba; cursor: pointer; font-size: 0.9rem; padding: 0 4px; transition: 0.2s; flex-shrink: 0; }
+        .memo-card .memo-list li .del-memo:hover { color: #d47a6a; transform: scale(1.2); }
+        .memo-card .memo-list .empty-hint { color: #ccc0ba; font-size: 0.85rem; padding: 16px 0; text-align: center; }
+        .memo-card .memo-input-row { display: flex; gap: 8px; margin-top: 4px; }
+        .memo-card .memo-input-row input { flex: 1; padding: 8px 14px; border-radius: 30px; border: 1px solid #f0e0da; background: #fcf8f6; font-size: 0.85rem; font-family: inherit; transition: 0.2s; color: #4a3a3a; outline: none; }
+        .memo-card .memo-input-row input:focus { border-color: #dba89a; outline: 2px solid #f5e3dd; }
+        .memo-card .memo-input-row button { padding: 6px 18px; border-radius: 30px; border: none; background: #dba89a; color: #fff; cursor: pointer; font-size: 0.85rem; transition: 0.2s; font-family: inherit; flex-shrink: 0; }
+        .memo-card .memo-input-row button:hover { background: #c99181; }
 
-        /* ===== 板块四：音频 ===== */
-        .audio-wrap {
-            max-width: 680px;
-            margin: 0 auto;
-        }
-        .audio-upload-area {
-            background: #fffbf9;
-            border: 2px dashed #f0e0da;
-            border-radius: 28px;
-            padding: 30px 20px;
-            text-align: center;
-            transition: 0.2s;
-            margin-bottom: 24px;
-        }
-        .audio-upload-area:hover {
-            border-color: #dba89a;
-            background: #fcf8f6;
-        }
-        .audio-upload-area label {
-            display: inline-block;
-            padding: 10px 36px;
-            background: #dba89a;
-            color: #fff;
-            border-radius: 40px;
-            cursor: pointer;
-            font-size: 0.95rem;
-            transition: 0.2s;
-            font-family: inherit;
-        }
-        .audio-upload-area label:hover {
-            background: #c99181;
-            transform: scale(1.02);
-        }
-        .audio-upload-area input[type="file"] {
-            display: none;
-        }
-        .audio-upload-area .hint {
-            color: #b2867c;
-            font-size: 0.85rem;
-            margin-top: 10px;
-        }
+        /* 音频 */
+        .audio-wrap { max-width: 680px; margin: 0 auto; }
+        .audio-upload-area { background: #fffbf9; border: 2px dashed #f0e0da; border-radius: 28px; padding: 30px 20px; text-align: center; transition: 0.2s; margin-bottom: 24px; }
+        .audio-upload-area:hover { border-color: #dba89a; background: #fcf8f6; }
+        .audio-upload-area label { display: inline-block; padding: 10px 36px; background: #dba89a; color: #fff; border-radius: 40px; cursor: pointer; font-size: 0.95rem; transition: 0.2s; font-family: inherit; }
+        .audio-upload-area label:hover { background: #c99181; transform: scale(1.02); }
+        .audio-upload-area input[type="file"] { display: none; }
+        .audio-upload-area .hint { color: #b2867c; font-size: 0.85rem; margin-top: 10px; }
+        .audio-list { display: flex; flex-direction: column; gap: 12px; }
+        .audio-item { background: #fffbf9; border-radius: 20px; padding: 16px 20px; border: 1px solid #f0e0da; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; transition: 0.2s; }
+        .audio-item:hover { border-color: #e8cdc2; }
+        .audio-item .audio-info { flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 2px; }
+        .audio-item .audio-info .name { font-size: 0.95rem; color: #4a3a3a; font-weight: 500; }
+        .audio-item .audio-info .size { font-size: 0.75rem; color: #b2867c; }
+        .audio-item audio { flex: 1; min-width: 140px; max-width: 260px; height: 40px; border-radius: 40px; }
+        .audio-item .del-audio { background: none; border: none; color: #ccc0ba; cursor: pointer; font-size: 1.1rem; transition: 0.2s; padding: 4px 8px; }
+        .audio-item .del-audio:hover { color: #d47a6a; transform: scale(1.15); }
+        .audio-list .empty-hint { text-align: center; color: #ccc0ba; padding: 40px 0; font-size: 0.95rem; }
 
-        .audio-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+        /* 响应式 */
+        @media (max-width:720px) {
+            .topbar { padding: 12px 16px; flex-direction: column; align-items: stretch; gap: 8px; }
+            .topbar .brand { font-size: 1.1rem; justify-content: center; }
+            .topbar .days { text-align: center; font-size: 0.85rem; }
+            .topbar .nav { justify-content: center; }
+            .topbar .nav button { font-size: 0.8rem; padding: 4px 12px; }
+            .sections { padding: 16px 14px 30px; }
+            .section-title { font-size: 1.3rem; }
+            #earthContainer { height: 400px; border-radius: 18px; }
+            .earth-toolbar { padding: 8px 14px; gap: 8px; flex-wrap: wrap; bottom: 12px; width: 92%; border-radius: 30px; }
+            .earth-toolbar input[type="text"] { width: 100px; font-size: 0.8rem; }
+            .earth-toolbar button { font-size: 0.8rem; padding: 4px 14px; }
+            .earth-toolbar .hint { font-size: 0.65rem; }
+            .calendar-wrap { padding: 16px 12px; border-radius: 18px; }
+            .calendar-grid .day-cell { font-size: 0.8rem; }
+            .memo-grid { grid-template-columns: 1fr; gap: 16px; }
+            .photo-modal .modal-box { padding: 20px 16px; }
+            .photo-grid { grid-template-columns: repeat(auto-fill, minmax(90px,1fr)); gap: 8px; }
+            .record-modal .modal-box { padding: 20px 16px; }
+            .audio-item { flex-direction: column; align-items: stretch; gap: 10px; }
+            .audio-item audio { max-width: 100%; width: 100%; }
+            .audio-item .audio-info { min-width: unset; }
+            #startPage .date-input-wrap { flex-direction: column; padding: 20px 24px; border-radius: 32px; width: 90%; max-width: 360px; }
+            #startPage .date-input-wrap input[type="date"] { width: 100%; text-align: center; }
+            #startPage .date-input-wrap button { width: 100%; }
+            #startPage h1 { font-size: 1.8rem; }
+            #startPage .logo { font-size: 3rem; }
         }
-        .audio-item {
-            background: #fffbf9;
-            border-radius: 20px;
-            padding: 16px 20px;
-            border: 1px solid #f0e0da;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            flex-wrap: wrap;
-            transition: 0.2s;
-        }
-        .audio-item:hover {
-            border-color: #e8cdc2;
-        }
-        .audio-item .audio-info {
-            flex: 1;
-            min-width: 120px;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-        .audio-item .audio-info .name {
-            font-size: 0.95rem;
-            color: #4a3a3a;
-            font-weight: 500;
-        }
-        .audio-item .audio-info .size {
-            font-size: 0.75rem;
-            color: #b2867c;
-        }
-        .audio-item audio {
-            flex: 1;
-            min-width: 140px;
-            max-width: 260px;
-            height: 40px;
-            border-radius: 40px;
-        }
-        .audio-item .del-audio {
-            background: none;
-            border: none;
-            color: #ccc0ba;
-            cursor: pointer;
-            font-size: 1.1rem;
-            transition: 0.2s;
-            padding: 4px 8px;
-        }
-        .audio-item .del-audio:hover {
-            color: #d47a6a;
-            transform: scale(1.15);
-        }
-        .audio-list .empty-hint {
-            text-align: center;
-            color: #ccc0ba;
-            padding: 40px 0;
-            font-size: 0.95rem;
-        }
-
-        /* ===== 响应式 ===== */
-        @media (max-width: 720px) {
-            .topbar {
-                padding: 12px 16px;
-                flex-direction: column;
-                align-items: stretch;
-                gap: 8px;
-            }
-            .topbar .brand {
-                font-size: 1.1rem;
-                justify-content: center;
-            }
-            .topbar .days {
-                text-align: center;
-                font-size: 0.85rem;
-            }
-            .topbar .nav {
-                justify-content: center;
-            }
-            .topbar .nav button {
-                font-size: 0.8rem;
-                padding: 4px 12px;
-            }
-            .sections {
-                padding: 16px 14px 30px;
-            }
-            .section-title {
-                font-size: 1.3rem;
-            }
-            #earthContainer {
-                height: 400px;
-                border-radius: 18px;
-            }
-            .earth-toolbar {
-                padding: 8px 14px;
-                gap: 8px;
-                flex-wrap: wrap;
-                bottom: 12px;
-                width: 92%;
-                border-radius: 30px;
-            }
-            .earth-toolbar input[type="text"] {
-                width: 100px;
-                font-size: 0.8rem;
-            }
-            .earth-toolbar button {
-                font-size: 0.8rem;
-                padding: 4px 14px;
-            }
-            .earth-toolbar .hint {
-                font-size: 0.65rem;
-            }
-            .calendar-wrap {
-                padding: 16px 12px;
-                border-radius: 18px;
-            }
-            .calendar-grid .day-cell {
-                font-size: 0.8rem;
-            }
-            .memo-grid {
-                grid-template-columns: 1fr;
-                gap: 16px;
-            }
-            .photo-modal .modal-box {
-                padding: 20px 16px;
-            }
-            .photo-grid {
-                grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-                gap: 8px;
-            }
-            .record-modal .modal-box {
-                padding: 20px 16px;
-            }
-            .audio-item {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 10px;
-            }
-            .audio-item audio {
-                max-width: 100%;
-                width: 100%;
-            }
-            .audio-item .audio-info {
-                min-width: unset;
-            }
-            #startPage .date-input-wrap {
-                flex-direction: column;
-                padding: 20px 24px;
-                border-radius: 32px;
-                width: 90%;
-                max-width: 360px;
-            }
-            #startPage .date-input-wrap input[type="date"] {
-                width: 100%;
-                text-align: center;
-            }
-            #startPage .date-input-wrap button {
-                width: 100%;
-            }
-            #startPage h1 {
-                font-size: 1.8rem;
-            }
-            #startPage .logo {
-                font-size: 3rem;
-            }
-        }
-        @media (max-width: 400px) {
-            .topbar .nav button {
-                font-size: 0.7rem;
-                padding: 3px 10px;
-            }
-            .calendar-grid .day-cell {
-                font-size: 0.7rem;
-            }
-            .memo-card .memo-input-row {
-                flex-direction: column;
-            }
-            .memo-card .memo-input-row button {
-                width: 100%;
-            }
+        @media (max-width:400px) {
+            .topbar .nav button { font-size: 0.7rem; padding: 3px 10px; }
+            .calendar-grid .day-cell { font-size: 0.7rem; }
+            .memo-card .memo-input-row { flex-direction: column; }
+            .memo-card .memo-input-row button { width: 100%; }
         }
     </style>
 </head>
 <body>
 
-    <!-- ============================================================ -->
-    <!-- 启动页 -->
-    <!-- ============================================================ -->
+    <!-- ===== 启动页 ===== -->
     <div id="startPage">
         <div class="logo">💕</div>
         <h1>我们的恋爱日记</h1>
         <p>记录与你有关的每一天</p>
         <div class="date-input-wrap">
             <label>📅 相遇之日</label>
-            <input type="date" id="startDateInput" />
+            <input type="date" id="startDateInput" value="2025-01-25" />
             <button id="enterBtn">✨ 开启</button>
         </div>
         <div class="error-msg" id="startError"></div>
     </div>
 
-    <!-- ============================================================ -->
-    <!-- 主应用 -->
-    <!-- ============================================================ -->
+    <!-- ===== 主应用 ===== -->
     <div id="app">
-        <!-- 顶栏 -->
         <header class="topbar">
-            <div class="brand">
-                💕 恋爱日记
-                <span id="coupleName">· 我们的故事</span>
-            </div>
+            <div class="brand">💕 恋爱日记 <span>· 我们的故事</span></div>
             <div class="days" id="daysDisplay">❤️ 已相伴 <strong>0</strong> 天</div>
             <nav class="nav">
                 <button class="active" data-section="section-earth">🌍 一路向哪</button>
@@ -1021,30 +238,22 @@
             </nav>
         </header>
 
-        <!-- 内容 -->
         <div class="sections">
-            <!-- ===== 板块一：地球 ===== -->
+            <!-- 地球 -->
             <div class="section active" id="section-earth">
-                <div class="section-title">
-                    🌍 一路向哪
-                    <small>— 我们走过的城市，点亮星光</small>
-                </div>
+                <div class="section-title">🌍 一路向哪 <small>— 我们走过的城市，点亮星光</small></div>
                 <div id="earthContainer">
-                    <!-- Three.js 渲染在此 -->
                     <div class="earth-toolbar">
                         <input type="text" id="cityInput" placeholder="城市名，如 成都" />
                         <button id="addCityBtn">📍 添加城市</button>
-                        <span class="hint">💡 点击地球上的光点查看照片</span>
+                        <span class="hint">💡 点击光点查看照片与文字</span>
                     </div>
                 </div>
             </div>
 
-            <!-- ===== 板块二：日历 ===== -->
+            <!-- 日历 -->
             <div class="section" id="section-calendar">
-                <div class="section-title">
-                    📅 每一天的我们
-                    <small>— 点击日期记录我们的故事</small>
-                </div>
+                <div class="section-title">📅 每一天的我们 <small>— 点击日期记录故事和心情</small></div>
                 <div class="calendar-wrap">
                     <div class="calendar-header">
                         <div class="year-month" id="calYearMonth">2026年 6月</div>
@@ -1058,23 +267,15 @@
                 </div>
             </div>
 
-            <!-- ===== 板块三：碎碎念 ===== -->
+            <!-- 碎碎念 -->
             <div class="section" id="section-memo">
-                <div class="section-title">
-                    💭 碎碎念
-                    <small>— 那些想记住的小情绪</small>
-                </div>
-                <div class="memo-grid" id="memoGrid">
-                    <!-- 三个备忘录卡片由 JS 生成 -->
-                </div>
+                <div class="section-title">💭 碎碎念 <small>— 那些想记住的小情绪</small></div>
+                <div class="memo-grid" id="memoGrid"></div>
             </div>
 
-            <!-- ===== 板块四：音频 ===== -->
+            <!-- 音频 -->
             <div class="section" id="section-audio">
-                <div class="section-title">
-                    🎧 你听得到
-                    <small>— 属于我们的声音</small>
-                </div>
+                <div class="section-title">🎧 你听得到 <small>— 属于我们的声音</small></div>
                 <div class="audio-wrap">
                     <div class="audio-upload-area">
                         <label for="audioFileInput">📤 上传音频</label>
@@ -1087,9 +288,7 @@
         </div>
     </div>
 
-    <!-- ============================================================ -->
-    <!-- 照片弹窗 -->
-    <!-- ============================================================ -->
+    <!-- ===== 照片弹窗（含文字备注） ===== -->
     <div class="photo-modal" id="photoModal">
         <div class="modal-box">
             <button class="close-btn" id="photoModalClose">✕</button>
@@ -1100,16 +299,26 @@
                 <input type="file" id="photoUploadInput" accept="image/*" multiple />
                 <span class="empty-hint" id="photoEmptyHint">还没有照片，添加一张吧 ✨</span>
             </div>
+            <div class="city-note-area">
+                <textarea id="cityNoteInput" placeholder="添加关于这座城市的文字记忆…"></textarea>
+                <button class="note-save-btn" id="cityNoteSave">💾 保存文字</button>
+            </div>
         </div>
     </div>
 
-    <!-- ============================================================ -->
-    <!-- 日历记录弹窗 -->
-    <!-- ============================================================ -->
+    <!-- ===== 日历记录弹窗（含心情） ===== -->
     <div class="record-modal" id="recordModal">
         <div class="modal-box">
             <h3 id="recordModalTitle">📝 记录这一天</h3>
             <textarea id="recordText" placeholder="今天发生了什么特别的事…"></textarea>
+            <div class="mood-selector" id="moodSelector">
+                <button data-mood="😊">😊</button>
+                <button data-mood="😢">😢</button>
+                <button data-mood="❤️">❤️</button>
+                <button data-mood="😡">😡</button>
+                <button data-mood="🎉">🎉</button>
+                <button data-mood="😴">😴</button>
+            </div>
             <div class="btn-row">
                 <button class="close-modal-btn" id="recordCloseBtn">取消</button>
                 <button class="del-record-btn" id="recordDelBtn">🗑 删除</button>
@@ -1118,31 +327,23 @@
         </div>
     </div>
 
-
     <!-- ============================================================ -->
     <!-- JavaScript -->
     <!-- ============================================================ -->
     <script type="module">
-        // ===== 导入 Three.js =====
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-        // ================================================================
-        //  工具 & 常量
-        // ================================================================
+        // ===== 存储键 =====
         const STORAGE_KEY = 'love_diary_data';
 
         function getDefaultData() {
             return {
                 startDate: '',
-                cities: {}, // { cityName: { lat, lng, photos: [dataUrl, ...] } }
-                calendar: {}, // { '2026-01-01': 'text' }
-                memos: {
-                    touched: [],
-                    angry: [],
-                    todo: []
-                },
-                audios: [] // [ { name, data, size, type }, ... ]
+                cities: {}, // { cityName: { lat, lng, photos: [dataUrl,...], note: '' } }
+                calendar: {}, // { '2026-01-01': { text: '', mood: '😊' } }
+                memos: { touched: [], angry: [], todo: [] },
+                audios: []
             };
         }
 
@@ -1151,19 +352,16 @@
                 const raw = localStorage.getItem(STORAGE_KEY);
                 if (!raw) return getDefaultData();
                 const data = JSON.parse(raw);
-                // 合并默认字段
                 const def = getDefaultData();
                 for (const k in def) {
                     if (!(k in data)) data[k] = def[k];
                 }
-                // 确保 memos 字段完整
-                for (const mk of ['touched', 'angry', 'todo']) {
-                    if (!data.memos[mk]) data.memos[mk] = [];
+                // 确保每个城市有 note 字段
+                for (const c in data.cities) {
+                    if (!data.cities[c].note) data.cities[c].note = '';
                 }
                 return data;
-            } catch {
-                return getDefaultData();
-            }
+            } catch { return getDefaultData(); }
         }
 
         function saveData(data) {
@@ -1172,55 +370,323 @@
 
         function formatDate(d) {
             const y = d.getFullYear();
-            const m = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
+            const m = String(d.getMonth()+1).padStart(2,'0');
+            const day = String(d.getDate()).padStart(2,'0');
             return `${y}-${m}-${day}`;
         }
-
         function parseDate(str) {
             const parts = str.split('-').map(Number);
-            return new Date(parts[0], parts[1] - 1, parts[2]);
+            return new Date(parts[0], parts[1]-1, parts[2]);
         }
-
         function getDaysDiff(d1, d2) {
             const t1 = new Date(d1.getFullYear(), d1.getMonth(), d1.getDate());
             const t2 = new Date(d2.getFullYear(), d2.getMonth(), d2.getDate());
-            return Math.floor((t2 - t1) / (1000 * 60 * 60 * 24));
+            return Math.floor((t2 - t1) / (1000*60*60*24));
         }
 
-        // 城市经纬度（常用城市）
+        // ===== 国内城市坐标（含所有省会、直辖市、重要地级市及用户指定城市） =====
         const CITY_COORDS = {
+            // 直辖市
             '北京': { lat: 39.9, lng: 116.4 },
+            '天津': { lat: 39.1, lng: 117.2 },
             '上海': { lat: 31.2, lng: 121.5 },
-            '广州': { lat: 23.1, lng: 113.3 },
-            '深圳': { lat: 22.5, lng: 114.1 },
-            '杭州': { lat: 30.3, lng: 120.2 },
-            '成都': { lat: 30.6, lng: 104.1 },
             '重庆': { lat: 29.6, lng: 106.5 },
-            '武汉': { lat: 30.6, lng: 114.3 },
+            // 省份省会
+            '石家庄': { lat: 38.0, lng: 114.5 },
+            '太原': { lat: 37.9, lng: 112.6 },
+            '呼和浩特': { lat: 40.8, lng: 111.7 },
+            '沈阳': { lat: 41.8, lng: 123.4 },
+            '长春': { lat: 43.9, lng: 125.3 },
+            '哈尔滨': { lat: 45.8, lng: 126.6 },
             '南京': { lat: 32.1, lng: 118.8 },
-            '西安': { lat: 34.3, lng: 108.9 },
-            '长沙': { lat: 28.2, lng: 113.0 },
+            '杭州': { lat: 30.3, lng: 120.2 },
+            '合肥': { lat: 31.8, lng: 117.2 },
+            '福州': { lat: 26.1, lng: 119.3 },
+            '南昌': { lat: 28.7, lng: 115.9 },
+            '济南': { lat: 36.7, lng: 117.0 },
             '郑州': { lat: 34.8, lng: 113.7 },
-            '昆明': { lat: 25.0, lng: 102.7 },
-            '贵阳': { lat: 26.6, lng: 106.7 },
+            '武汉': { lat: 30.6, lng: 114.3 },
+            '长沙': { lat: 28.2, lng: 113.0 },
+            '广州': { lat: 23.1, lng: 113.3 },
             '南宁': { lat: 22.8, lng: 108.3 },
             '海口': { lat: 20.0, lng: 110.3 },
+            '成都': { lat: 30.6, lng: 104.1 },
+            '贵阳': { lat: 26.6, lng: 106.7 },
+            '昆明': { lat: 25.0, lng: 102.7 },
+            '拉萨': { lat: 29.6, lng: 91.1 },
+            '西安': { lat: 34.3, lng: 108.9 },
+            '兰州': { lat: 36.1, lng: 103.8 },
+            '西宁': { lat: 36.6, lng: 101.8 },
+            '银川': { lat: 38.5, lng: 106.3 },
+            '乌鲁木齐': { lat: 43.8, lng: 87.6 },
             '台北': { lat: 25.0, lng: 121.5 },
             '香港': { lat: 22.3, lng: 114.2 },
             '澳门': { lat: 22.2, lng: 113.5 },
-            '东京': { lat: 35.7, lng: 139.7 },
-            '首尔': { lat: 37.6, lng: 127.0 },
-            '曼谷': { lat: 13.8, lng: 100.5 },
-            '新加坡': { lat: 1.3, lng: 103.8 },
-            '巴黎': { lat: 48.9, lng: 2.3 },
-            '伦敦': { lat: 51.5, lng: -0.1 },
-            '纽约': { lat: 40.7, lng: -74.0 },
-            '洛杉矶': { lat: 34.1, lng: -118.2 },
-            '悉尼': { lat: -33.9, lng: 151.2 },
-            '开普敦': { lat: -33.9, lng: 18.4 },
-            '莫斯科': { lat: 55.8, lng: 37.6 },
-            '迪拜': { lat: 25.2, lng: 55.3 },
+            // 计划单列市及重要城市
+            '大连': { lat: 38.9, lng: 121.6 },
+            '青岛': { lat: 36.1, lng: 120.4 },
+            '宁波': { lat: 29.9, lng: 121.6 },
+            '厦门': { lat: 24.5, lng: 118.1 },
+            '深圳': { lat: 22.5, lng: 114.1 },
+            '苏州': { lat: 31.3, lng: 120.6 },
+            '无锡': { lat: 31.5, lng: 120.3 },
+            '常州': { lat: 31.8, lng: 120.0 },
+            '徐州': { lat: 34.3, lng: 117.2 },
+            '温州': { lat: 28.0, lng: 120.7 },
+            '绍兴': { lat: 30.0, lng: 120.6 },
+            '嘉兴': { lat: 30.8, lng: 120.8 },
+            '金华': { lat: 29.1, lng: 119.6 },
+            '台州': { lat: 28.7, lng: 121.4 },
+            '泉州': { lat: 24.9, lng: 118.6 },
+            '漳州': { lat: 24.5, lng: 117.6 },
+            '龙岩': { lat: 25.1, lng: 117.0 },
+            '三明': { lat: 26.2, lng: 117.6 },
+            '南平': { lat: 26.6, lng: 118.2 },
+            '宁德': { lat: 26.7, lng: 119.5 },
+            '烟台': { lat: 37.5, lng: 121.4 },
+            '潍坊': { lat: 36.7, lng: 119.2 },
+            '淄博': { lat: 36.8, lng: 118.1 },
+            '临沂': { lat: 35.1, lng: 118.3 },
+            '济宁': { lat: 35.4, lng: 116.6 },
+            '泰安': { lat: 36.2, lng: 117.1 },
+            '威海': { lat: 37.5, lng: 122.1 },
+            '日照': { lat: 35.4, lng: 119.5 },
+            '枣庄': { lat: 34.8, lng: 117.3 },
+            '德州': { lat: 37.4, lng: 116.3 },
+            '聊城': { lat: 36.5, lng: 115.9 },
+            '滨州': { lat: 37.4, lng: 118.0 },
+            '菏泽': { lat: 35.2, lng: 115.5 },
+            '东营': { lat: 37.5, lng: 118.5 },
+            '鞍山': { lat: 41.1, lng: 123.0 },
+            '抚顺': { lat: 41.9, lng: 123.9 },
+            '本溪': { lat: 41.3, lng: 123.8 },
+            '丹东': { lat: 40.1, lng: 124.3 },
+            '锦州': { lat: 41.1, lng: 121.2 },
+            '营口': { lat: 40.7, lng: 122.2 },
+            '阜新': { lat: 42.0, lng: 121.7 },
+            '辽阳': { lat: 41.3, lng: 123.2 },
+            '盘锦': { lat: 41.1, lng: 122.1 },
+            '铁岭': { lat: 42.3, lng: 123.8 },
+            '朝阳': { lat: 41.6, lng: 120.5 },
+            '葫芦岛': { lat: 40.8, lng: 120.8 },
+            '吉林': { lat: 43.9, lng: 126.6 },
+            '四平': { lat: 43.2, lng: 124.4 },
+            '辽源': { lat: 42.9, lng: 125.1 },
+            '通化': { lat: 41.7, lng: 125.9 },
+            '白山': { lat: 41.9, lng: 126.4 },
+            '松原': { lat: 45.1, lng: 124.8 },
+            '白城': { lat: 45.6, lng: 122.8 },
+            '延边': { lat: 42.9, lng: 129.5 },
+            '齐齐哈尔': { lat: 47.3, lng: 123.9 },
+            '鸡西': { lat: 45.3, lng: 130.9 },
+            '鹤岗': { lat: 47.3, lng: 130.3 },
+            '双鸭山': { lat: 46.6, lng: 131.2 },
+            '大庆': { lat: 46.6, lng: 125.0 },
+            '伊春': { lat: 47.7, lng: 128.8 },
+            '佳木斯': { lat: 46.8, lng: 130.4 },
+            '七台河': { lat: 45.8, lng: 131.0 },
+            '牡丹江': { lat: 44.6, lng: 129.6 },
+            '黑河': { lat: 50.2, lng: 127.5 },
+            '绥化': { lat: 46.6, lng: 127.0 },
+            '大兴安岭': { lat: 50.4, lng: 124.1 },
+            '包头': { lat: 40.7, lng: 110.0 },
+            '乌海': { lat: 39.7, lng: 106.8 },
+            '赤峰': { lat: 42.3, lng: 118.9 },
+            '通辽': { lat: 43.6, lng: 122.3 },
+            '鄂尔多斯': { lat: 39.6, lng: 110.0 },
+            '呼伦贝尔': { lat: 49.2, lng: 119.7 },
+            '巴彦淖尔': { lat: 40.8, lng: 107.4 },
+            '乌兰察布': { lat: 41.0, lng: 113.1 },
+            '兴安盟': { lat: 46.1, lng: 122.0 },
+            '锡林郭勒': { lat: 43.9, lng: 116.1 },
+            '阿拉善': { lat: 38.8, lng: 105.7 },
+            '唐山': { lat: 39.6, lng: 118.2 },
+            '秦皇岛': { lat: 39.9, lng: 119.6 },
+            '邯郸': { lat: 36.6, lng: 114.5 },
+            '邢台': { lat: 37.1, lng: 114.5 },
+            '保定': { lat: 38.9, lng: 115.5 },
+            '张家口': { lat: 40.8, lng: 114.9 },
+            '承德': { lat: 40.9, lng: 117.9 },
+            '沧州': { lat: 38.3, lng: 116.8 },
+            '廊坊': { lat: 39.5, lng: 116.7 },
+            '衡水': { lat: 37.7, lng: 115.7 },
+            '大同': { lat: 40.1, lng: 113.3 },
+            '阳泉': { lat: 37.9, lng: 113.6 },
+            '长治': { lat: 36.2, lng: 113.1 },
+            '晋城': { lat: 35.5, lng: 112.8 },
+            '朔州': { lat: 39.3, lng: 112.4 },
+            '晋中': { lat: 37.7, lng: 112.8 },
+            '运城': { lat: 35.0, lng: 111.0 },
+            '忻州': { lat: 38.4, lng: 112.7 },
+            '临汾': { lat: 36.1, lng: 111.5 },
+            '吕梁': { lat: 37.5, lng: 111.1 },
+            '开封': { lat: 34.8, lng: 114.3 },
+            '洛阳': { lat: 34.6, lng: 112.4 },
+            '平顶山': { lat: 33.7, lng: 113.3 },
+            '安阳': { lat: 36.1, lng: 114.3 },
+            '鹤壁': { lat: 35.9, lng: 114.2 },
+            '新乡': { lat: 35.3, lng: 113.9 },
+            '焦作': { lat: 35.2, lng: 113.2 },
+            '濮阳': { lat: 35.7, lng: 115.1 },
+            '许昌': { lat: 34.0, lng: 113.8 },
+            '漯河': { lat: 33.6, lng: 114.0 },
+            '三门峡': { lat: 34.8, lng: 111.2 },
+            '南阳': { lat: 33.0, lng: 112.5 },
+            '商丘': { lat: 34.4, lng: 115.6 },
+            '信阳': { lat: 32.1, lng: 114.1 },
+            '周口': { lat: 33.6, lng: 114.6 },
+            '驻马店': { lat: 33.0, lng: 114.0 },
+            '济源': { lat: 35.1, lng: 112.6 },
+            '黄石': { lat: 30.2, lng: 115.1 },
+            '十堰': { lat: 32.6, lng: 110.8 },
+            '宜昌': { lat: 30.7, lng: 111.3 },
+            '襄阳': { lat: 32.0, lng: 112.1 },
+            '鄂州': { lat: 30.4, lng: 114.9 },
+            '荆门': { lat: 31.0, lng: 112.2 },
+            '孝感': { lat: 30.9, lng: 113.9 },
+            '荆州': { lat: 30.3, lng: 112.2 },
+            '黄冈': { lat: 30.4, lng: 114.9 },
+            '咸宁': { lat: 29.8, lng: 114.3 },
+            '随州': { lat: 31.7, lng: 113.4 },
+            '恩施': { lat: 30.3, lng: 109.5 },
+            '神农架': { lat: 31.7, lng: 110.7 },
+            '株洲': { lat: 27.8, lng: 113.1 },
+            '湘潭': { lat: 27.8, lng: 112.9 },
+            '衡阳': { lat: 26.9, lng: 112.6 },
+            '邵阳': { lat: 27.2, lng: 111.5 },
+            '岳阳': { lat: 29.4, lng: 113.1 },
+            '常德': { lat: 29.0, lng: 111.7 },
+            '张家界': { lat: 29.1, lng: 110.5 },
+            '益阳': { lat: 28.6, lng: 112.3 },
+            '郴州': { lat: 25.8, lng: 113.0 },
+            '永州': { lat: 26.4, lng: 111.6 },
+            '怀化': { lat: 27.5, lng: 110.0 },
+            '娄底': { lat: 27.7, lng: 112.0 },
+            '湘西': { lat: 28.3, lng: 109.7 },
+            '韶关': { lat: 24.8, lng: 113.6 },
+            '珠海': { lat: 22.3, lng: 113.6 },
+            '汕头': { lat: 23.4, lng: 116.7 },
+            '佛山': { lat: 23.0, lng: 113.1 },
+            '江门': { lat: 22.6, lng: 113.1 },
+            '湛江': { lat: 21.2, lng: 110.4 },
+            '茂名': { lat: 21.7, lng: 110.9 },
+            '肇庆': { lat: 23.0, lng: 112.5 },
+            '惠州': { lat: 23.1, lng: 114.4 },
+            '梅州': { lat: 24.3, lng: 116.1 },
+            '汕尾': { lat: 22.8, lng: 115.4 },
+            '河源': { lat: 23.7, lng: 114.7 },
+            '阳江': { lat: 21.9, lng: 111.9 },
+            '清远': { lat: 23.7, lng: 113.0 },
+            '东莞': { lat: 23.0, lng: 113.8 },
+            '中山': { lat: 22.5, lng: 113.4 },
+            '潮州': { lat: 23.7, lng: 116.6 },
+            '揭阳': { lat: 23.5, lng: 116.4 },
+            '云浮': { lat: 22.9, lng: 112.0 },
+            '柳州': { lat: 24.3, lng: 109.4 },
+            '桂林': { lat: 25.3, lng: 110.3 },
+            '梧州': { lat: 23.5, lng: 111.3 },
+            '北海': { lat: 21.5, lng: 109.1 },
+            '防城港': { lat: 21.7, lng: 108.4 },
+            '钦州': { lat: 21.9, lng: 108.6 },
+            '贵港': { lat: 23.1, lng: 109.6 },
+            '玉林': { lat: 22.6, lng: 110.2 },
+            '百色': { lat: 23.9, lng: 106.6 },
+            '贺州': { lat: 24.4, lng: 111.6 },
+            '河池': { lat: 24.7, lng: 108.1 },
+            '来宾': { lat: 23.7, lng: 109.2 },
+            '崇左': { lat: 22.4, lng: 107.4 },
+            '自贡': { lat: 29.3, lng: 104.8 },
+            '攀枝花': { lat: 26.6, lng: 101.7 },
+            '泸州': { lat: 28.9, lng: 105.4 },
+            '德阳': { lat: 31.1, lng: 104.4 },
+            '绵阳': { lat: 31.5, lng: 104.7 },
+            '广元': { lat: 32.4, lng: 105.8 },
+            '遂宁': { lat: 30.5, lng: 105.6 },
+            '内江': { lat: 29.6, lng: 105.1 },
+            '乐山': { lat: 29.6, lng: 103.8 },
+            '南充': { lat: 30.8, lng: 106.1 },
+            '眉山': { lat: 30.1, lng: 103.8 },
+            '宜宾': { lat: 28.8, lng: 104.6 },
+            '广安': { lat: 30.5, lng: 106.6 },
+            '达州': { lat: 31.2, lng: 107.5 },
+            '雅安': { lat: 30.0, lng: 103.0 },
+            '巴中': { lat: 31.9, lng: 106.7 },
+            '资阳': { lat: 30.1, lng: 104.6 },
+            '阿坝': { lat: 31.9, lng: 102.2 },
+            '甘孜': { lat: 30.0, lng: 101.9 },
+            '凉山': { lat: 27.9, lng: 102.3 },
+            '六盘水': { lat: 26.6, lng: 104.8 },
+            '遵义': { lat: 27.7, lng: 106.9 },
+            '安顺': { lat: 26.3, lng: 105.9 },
+            '铜仁': { lat: 27.7, lng: 109.2 },
+            '黔西南': { lat: 25.1, lng: 104.9 },
+            '毕节': { lat: 27.3, lng: 105.3 },
+            '黔东南': { lat: 26.6, lng: 107.9 },
+            '黔南': { lat: 26.3, lng: 107.5 },
+            '曲靖': { lat: 25.5, lng: 103.8 },
+            '玉溪': { lat: 24.4, lng: 102.5 },
+            '保山': { lat: 25.1, lng: 99.2 },
+            '昭通': { lat: 27.3, lng: 103.7 },
+            '丽江': { lat: 26.9, lng: 100.2 },
+            '普洱': { lat: 22.8, lng: 101.0 },
+            '临沧': { lat: 23.9, lng: 100.1 },
+            '楚雄': { lat: 25.0, lng: 101.5 },
+            '红河': { lat: 23.4, lng: 103.4 },
+            '文山': { lat: 23.4, lng: 104.2 },
+            '西双版纳': { lat: 22.0, lng: 100.8 },
+            '大理': { lat: 25.6, lng: 100.2 },
+            '德宏': { lat: 24.4, lng: 98.6 },
+            '怒江': { lat: 25.9, lng: 98.9 },
+            '迪庆': { lat: 27.8, lng: 99.7 },
+            '铜川': { lat: 34.9, lng: 109.0 },
+            '宝鸡': { lat: 34.4, lng: 107.1 },
+            '咸阳': { lat: 34.3, lng: 108.7 },
+            '渭南': { lat: 34.5, lng: 109.5 },
+            '延安': { lat: 36.6, lng: 109.5 },
+            '汉中': { lat: 33.1, lng: 107.0 },
+            '榆林': { lat: 38.3, lng: 109.7 },
+            '安康': { lat: 32.7, lng: 109.0 },
+            '商洛': { lat: 33.9, lng: 109.9 },
+            '嘉峪关': { lat: 39.8, lng: 98.3 },
+            '金昌': { lat: 38.5, lng: 102.2 },
+            '白银': { lat: 36.5, lng: 104.2 },
+            '天水': { lat: 34.6, lng: 105.7 },
+            '武威': { lat: 37.9, lng: 102.6 },
+            '张掖': { lat: 38.9, lng: 100.5 },
+            '平凉': { lat: 35.5, lng: 106.7 },
+            '酒泉': { lat: 39.7, lng: 98.5 },
+            '庆阳': { lat: 35.7, lng: 107.6 },
+            '定西': { lat: 35.6, lng: 104.6 },
+            '陇南': { lat: 33.4, lng: 104.9 },
+            '临夏': { lat: 35.6, lng: 103.2 },
+            '甘南': { lat: 35.0, lng: 102.9 },
+            '海东': { lat: 36.5, lng: 102.1 },
+            '海北': { lat: 36.9, lng: 100.9 },
+            '黄南': { lat: 35.5, lng: 102.0 },
+            '海南州': { lat: 36.3, lng: 100.6 },
+            '果洛': { lat: 34.5, lng: 100.2 },
+            '玉树': { lat: 33.0, lng: 97.0 },
+            '海西': { lat: 37.4, lng: 97.3 },
+            '石嘴山': { lat: 39.0, lng: 106.4 },
+            '吴忠': { lat: 38.0, lng: 106.2 },
+            '固原': { lat: 36.0, lng: 106.3 },
+            '中卫': { lat: 37.5, lng: 105.2 },
+            '克拉玛依': { lat: 45.6, lng: 84.9 },
+            '吐鲁番': { lat: 42.9, lng: 89.2 },
+            '哈密': { lat: 42.8, lng: 93.5 },
+            '昌吉': { lat: 44.0, lng: 87.3 },
+            '博州': { lat: 44.9, lng: 82.1 },
+            '巴州': { lat: 41.7, lng: 86.1 },
+            '阿克苏': { lat: 41.2, lng: 80.3 },
+            '克州': { lat: 39.7, lng: 76.1 },
+            '喀什': { lat: 39.5, lng: 76.0 },
+            '和田': { lat: 37.1, lng: 79.9 },
+            '伊犁': { lat: 43.9, lng: 81.3 },
+            '塔城': { lat: 46.7, lng: 83.0 },
+            '阿勒泰': { lat: 47.8, lng: 88.1 },
+            // 用户额外指定
+            '赣州': { lat: 25.8, lng: 114.9 },
+            '佛罗里达': { lat: 25.8, lng: -80.2 }, // 美国佛罗里达州迈阿密附近
         };
 
         function latLngToPosition(lat, lng, radius) {
@@ -1233,18 +699,12 @@
             );
         }
 
-        // ================================================================
-        //  状态
-        // ================================================================
+        // ===== 数据 =====
         let data = loadData();
-        let currentCityForPhotos = null; // 当前查看照片的城市名
-        let currentRecordDate = null; // 当前编辑记录的日期
 
-        // ================================================================
-        //  DOM 引用
-        // ================================================================
-        const $ = (sel) => document.querySelector(sel);
-        const $$ = (sel) => document.querySelectorAll(sel);
+        // ===== DOM 引用 =====
+        const $ = sel => document.querySelector(sel);
+        const $$ = sel => document.querySelectorAll(sel);
 
         const startPage = $('#startPage');
         const startDateInput = $('#startDateInput');
@@ -1255,65 +715,54 @@
         const navBtns = $$('.topbar .nav button');
         const sections = $$('.section');
 
-        // 地球
         const earthContainer = $('#earthContainer');
         const cityInput = $('#cityInput');
         const addCityBtn = $('#addCityBtn');
 
-        // 日历
         const calYearMonth = $('#calYearMonth');
         const calGrid = $('#calendarGrid');
         const calPrev = $('#calPrev');
         const calNext = $('#calNext');
         const calToday = $('#calToday');
 
-        // 备忘录
         const memoGrid = $('#memoGrid');
 
-        // 音频
         const audioFileInput = $('#audioFileInput');
         const audioList = $('#audioList');
 
-        // 照片弹窗
         const photoModal = $('#photoModal');
         const photoModalTitle = $('#photoModalTitle');
         const photoGrid = $('#photoGrid');
         const photoUploadInput = $('#photoUploadInput');
         const photoEmptyHint = $('#photoEmptyHint');
         const photoModalClose = $('#photoModalClose');
+        const cityNoteInput = $('#cityNoteInput');
+        const cityNoteSave = $('#cityNoteSave');
 
-        // 记录弹窗
         const recordModal = $('#recordModal');
         const recordModalTitle = $('#recordModalTitle');
         const recordText = $('#recordText');
         const recordCloseBtn = $('#recordCloseBtn');
         const recordDelBtn = $('#recordDelBtn');
         const recordSaveBtn = $('#recordSaveBtn');
+        const moodSelector = $('#moodSelector');
 
-        // ================================================================
-        //  启动逻辑
-        // ================================================================
-        // 如果已有开始日期，直接进入
+        // ===== 启动逻辑 =====
         if (data.startDate) {
             startPage.classList.add('hidden');
             app.classList.add('show');
             updateDaysDisplay();
             initAll();
         } else {
-            // 默认今天
-            const today = new Date();
-            startDateInput.value = formatDate(today);
+            // 默认显示 2025-01-25
+            startDateInput.value = '2025-01-25';
         }
 
         enterBtn.addEventListener('click', () => {
             const val = startDateInput.value;
-            if (!val) {
-                startError.textContent = '请选择相遇的日期 💕';
-                return;
-            }
-            const d = new Date(val);
-            if (isNaN(d.getTime())) {
-                startError.textContent = '日期格式不正确，请重新选择';
+            const correct = '2025-01-25';
+            if (val !== correct) {
+                startError.textContent = '💕 请输入正确的相遇日期：2025-01-25';
                 return;
             }
             data.startDate = val;
@@ -1328,9 +777,6 @@
             if (e.key === 'Enter') enterBtn.click();
         });
 
-        // ================================================================
-        //  天数更新
-        // ================================================================
         function updateDaysDisplay() {
             if (!data.startDate) return;
             const start = parseDate(data.startDate);
@@ -1339,9 +785,7 @@
             daysDisplay.innerHTML = `❤️ 已相伴 <strong>${diff >= 0 ? diff : 0}</strong> 天`;
         }
 
-        // ================================================================
-        //  导航切换
-        // ================================================================
+        // 导航切换
         navBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 navBtns.forEach(b => b.classList.remove('active'));
@@ -1350,24 +794,19 @@
                 sections.forEach(s => s.classList.remove('active'));
                 const sec = document.getElementById(target);
                 if (sec) sec.classList.add('active');
-                // 如果切换到地球，重新渲染尺寸
                 if (target === 'section-earth') {
                     setTimeout(() => onEarthResize(), 100);
                 }
             });
         });
 
-        // ================================================================
-        //  初始化所有模块
-        // ================================================================
+        // ===== 初始化所有模块 =====
         function initAll() {
             initEarth();
             renderCalendar();
             renderMemos();
             renderAudios();
-            // 每天更新天数
             setInterval(updateDaysDisplay, 60000);
-            // 窗口变化重绘地球
             window.addEventListener('resize', onEarthResize);
         }
 
@@ -1378,6 +817,7 @@
         let cityMarkers = [];
         let earthInitialized = false;
         let earthAnimationId = null;
+        let currentCityForPhotos = null;
 
         function initEarth() {
             if (earthInitialized) return;
@@ -1388,7 +828,7 @@
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x0b0e1a);
 
-            camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
+            camera = new THREE.PerspectiveCamera(45, w/h, 0.1, 1000);
             camera.position.set(0, 0, 3.2);
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -1409,21 +849,19 @@
             const ambient = new THREE.AmbientLight(0x404060, 0.6);
             scene.add(ambient);
             const dirLight = new THREE.DirectionalLight(0xffffff, 1.8);
-            dirLight.position.set(5, 3, 5);
+            dirLight.position.set(5,3,5);
             scene.add(dirLight);
             const backLight = new THREE.DirectionalLight(0x8888ff, 0.4);
-            backLight.position.set(-3, -1, -4);
+            backLight.position.set(-3,-1,-4);
             scene.add(backLight);
 
-            // 星星背景
+            // 星星
             const starsGeo = new THREE.BufferGeometry();
             const starCount = 2000;
-            const starPos = new Float32Array(starCount * 3);
-            for (let i = 0; i < starCount * 3; i++) {
-                starPos[i] = (Math.random() - 0.5) * 200;
-            }
-            starsGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-            const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.15, transparent: true, opacity: 0.8 });
+            const starPos = new Float32Array(starCount*3);
+            for (let i=0; i<starCount*3; i++) starPos[i] = (Math.random()-0.5)*200;
+            starsGeo.setAttribute('position', new THREE.BufferAttribute(starPos,3));
+            const starMat = new THREE.PointsMaterial({ color:0xffffff, size:0.15, transparent:true, opacity:0.8 });
             const stars = new THREE.Points(starsGeo, starMat);
             scene.add(stars);
 
@@ -1443,7 +881,7 @@
             scene.add(earthGroup);
 
             // 光晕
-            const glowGeo = new THREE.SphereGeometry(radius * 1.01, 48, 48);
+            const glowGeo = new THREE.SphereGeometry(radius*1.01, 48, 48);
             const glowMat = new THREE.MeshBasicMaterial({
                 color: 0x4488ff,
                 transparent: true,
@@ -1453,13 +891,12 @@
             const glow = new THREE.Mesh(glowGeo, glowMat);
             earthGroup.add(glow);
 
-            // 加载城市标记
             loadCityMarkers();
 
             earthInitialized = true;
             animateEarth();
 
-            // 点击交互：检测光点点击
+            // 点击检测
             const raycaster = new THREE.Raycaster();
             const mouse = new THREE.Vector2();
             renderer.domElement.addEventListener('click', (event) => {
@@ -1499,19 +936,14 @@
             const container = earthContainer;
             const w = container.clientWidth || 600;
             const h = container.clientHeight || 600;
-            camera.aspect = w / h;
+            camera.aspect = w/h;
             camera.updateProjectionMatrix();
             renderer.setSize(w, h);
         }
 
-        // 加载城市标记
         function loadCityMarkers() {
-            // 清除旧标记
-            cityMarkers.forEach(m => {
-                if (m.parent) m.parent.remove(m);
-            });
+            cityMarkers.forEach(m => { if (m.parent) m.parent.remove(m); });
             cityMarkers = [];
-
             const radius = 1.2;
             const cityNames = Object.keys(data.cities);
             for (const name of cityNames) {
@@ -1531,8 +963,7 @@
             mesh.position.copy(position);
             mesh.userData.cityName = cityName;
 
-            // 光晕
-            const glowGeo2 = new THREE.SphereGeometry(size * 2.5, 16, 16);
+            const glowGeo2 = new THREE.SphereGeometry(size*2.5, 16, 16);
             const glowMat2 = new THREE.MeshBasicMaterial({
                 color: 0x88ccff,
                 transparent: true,
@@ -1542,7 +973,6 @@
             glow2.position.copy(position);
             mesh.add(glow2);
 
-            // 连线（到球心方向）
             const dir = position.clone().normalize();
             const start = dir.clone().multiplyScalar(1.2);
             const end = dir.clone().multiplyScalar(1.25);
@@ -1554,14 +984,11 @@
             return mesh;
         }
 
-        // 添加城市
         function addCity(name) {
-            // 检查是否已存在
             if (data.cities[name]) {
                 alert(`「${name}」已经点亮了 ✨`);
                 return;
             }
-            // 查找坐标
             let coords = CITY_COORDS[name];
             if (!coords) {
                 // 尝试模糊匹配
@@ -1570,28 +997,29 @@
                 if (match) coords = CITY_COORDS[match];
             }
             if (!coords) {
-                alert(`还没有「${name}」的坐标数据，你可以手动输入经纬度，或者换一个城市试试 🌏`);
+                alert(`还没有「${name}」的坐标数据，请换一个城市 🌏`);
                 return;
             }
             data.cities[name] = {
                 lat: coords.lat,
                 lng: coords.lng,
-                photos: []
+                photos: [],
+                note: ''
             };
             saveData(data);
-            // 重新加载标记
             loadCityMarkers();
             cityInput.value = '';
-            // 自动旋转一下
             controls.autoRotate = true;
         }
 
-        // ================================================================
-        //  照片弹窗
-        // ================================================================
+        // ===== 照片弹窗（含文字） =====
         function openPhotoModal(cityName) {
             currentCityForPhotos = cityName;
             photoModalTitle.textContent = `📍 ${cityName}`;
+            const city = data.cities[cityName];
+            if (city) {
+                cityNoteInput.value = city.note || '';
+            }
             renderPhotos(cityName);
             photoModal.classList.add('open');
             controls.autoRotate = false;
@@ -1612,12 +1040,11 @@
                 photoEmptyHint.style.display = 'block';
             } else {
                 photoEmptyHint.style.display = 'none';
-                for (let i = 0; i < photos.length; i++) {
+                photos.forEach((src, i) => {
                     const div = document.createElement('div');
                     div.className = 'photo-item';
                     const img = document.createElement('img');
-                    img.src = photos[i];
-                    img.alt = `照片 ${i+1}`;
+                    img.src = src;
                     div.appendChild(img);
                     const del = document.createElement('button');
                     del.className = 'del-btn';
@@ -1628,7 +1055,7 @@
                     });
                     div.appendChild(del);
                     photoGrid.appendChild(div);
-                }
+                });
             }
         }
 
@@ -1642,7 +1069,7 @@
 
         photoUploadInput.addEventListener('change', (e) => {
             const files = e.target.files;
-            if (!files || files.length === 0) return;
+            if (!files || files.length===0) return;
             const cityName = currentCityForPhotos;
             if (!cityName) return;
             const city = data.cities[cityName];
@@ -1660,67 +1087,88 @@
             photoUploadInput.value = '';
         });
 
+        cityNoteSave.addEventListener('click', () => {
+            const cityName = currentCityForPhotos;
+            if (!cityName) return;
+            const city = data.cities[cityName];
+            if (!city) return;
+            city.note = cityNoteInput.value.trim();
+            saveData(data);
+            alert('💾 文字已保存！');
+        });
+
         photoModalClose.addEventListener('click', closePhotoModal);
         photoModal.addEventListener('click', (e) => {
             if (e.target === photoModal) closePhotoModal();
         });
 
         // ================================================================
-        //  板块二：日历
+        //  板块二：日历（含心情）
         // ================================================================
         let calYear = new Date().getFullYear();
         let calMonth = new Date().getMonth();
 
         function renderCalendar() {
-            const year = calYear;
-            const month = calMonth;
-            calYearMonth.textContent = `${year}年 ${month + 1}月`;
+            const year = calYear, month = calMonth;
+            calYearMonth.textContent = `${year}年 ${month+1}月`;
 
             const firstDay = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const daysInMonth = new Date(year, month+1, 0).getDate();
             const daysInPrev = new Date(year, month, 0).getDate();
 
             const today = new Date();
             const todayStr = formatDate(today);
 
             let html = '';
-            const weekLabels = ['日', '一', '二', '三', '四', '五', '六'];
-            for (const wl of weekLabels) {
-                html += `<div class="week-label">${wl}</div>`;
-            }
+            const weekLabels = ['日','一','二','三','四','五','六'];
+            for (const wl of weekLabels) html += `<div class="week-label">${wl}</div>`;
 
             // 上月填充
             const prevStart = daysInPrev - firstDay + 1;
-            for (let i = prevStart; i <= daysInPrev; i++) {
-                const dateObj = new Date(year, month - 1, i);
+            for (let i=prevStart; i<=daysInPrev; i++) {
+                const dateObj = new Date(year, month-1, i);
                 const dateStr = formatDate(dateObj);
-                const hasRecord = !!data.calendar[dateStr];
-                html += `<button class="day-cell other-month ${hasRecord ? 'has-record' : ''}" data-date="${dateStr}">${i}</button>`;
+                const record = data.calendar[dateStr];
+                const hasRecord = !!record;
+                const mood = record?.mood || '';
+                html += `<button class="day-cell other-month ${hasRecord?'has-record':''}" data-date="${dateStr}">
+                            ${i}
+                            ${mood ? `<span class="mood-icon">${mood}</span>` : ''}
+                        </button>`;
             }
 
             // 本月
-            for (let d = 1; d <= daysInMonth; d++) {
+            for (let d=1; d<=daysInMonth; d++) {
                 const dateObj = new Date(year, month, d);
                 const dateStr = formatDate(dateObj);
-                const hasRecord = !!data.calendar[dateStr];
+                const record = data.calendar[dateStr];
+                const hasRecord = !!record;
+                const mood = record?.mood || '';
                 const isToday = dateStr === todayStr;
-                const classes = `day-cell ${hasRecord ? 'has-record' : ''} ${isToday ? 'today' : ''}`;
-                html += `<button class="${classes}" data-date="${dateStr}">${d}</button>`;
+                const classes = `day-cell ${hasRecord?'has-record':''} ${isToday?'today':''}`;
+                html += `<button class="${classes}" data-date="${dateStr}">
+                            ${d}
+                            ${mood ? `<span class="mood-icon">${mood}</span>` : ''}
+                        </button>`;
             }
 
             // 下月填充
             const totalCells = firstDay + daysInMonth;
             const remaining = (7 - (totalCells % 7)) % 7;
-            for (let d = 1; d <= remaining; d++) {
-                const dateObj = new Date(year, month + 1, d);
+            for (let d=1; d<=remaining; d++) {
+                const dateObj = new Date(year, month+1, d);
                 const dateStr = formatDate(dateObj);
-                const hasRecord = !!data.calendar[dateStr];
-                html += `<button class="day-cell other-month ${hasRecord ? 'has-record' : ''}" data-date="${dateStr}">${d}</button>`;
+                const record = data.calendar[dateStr];
+                const hasRecord = !!record;
+                const mood = record?.mood || '';
+                html += `<button class="day-cell other-month ${hasRecord?'has-record':''}" data-date="${dateStr}">
+                            ${d}
+                            ${mood ? `<span class="mood-icon">${mood}</span>` : ''}
+                        </button>`;
             }
 
             calGrid.innerHTML = html;
 
-            // 绑定点击事件
             calGrid.querySelectorAll('.day-cell').forEach(cell => {
                 cell.addEventListener('click', () => {
                     const dateStr = cell.dataset.date;
@@ -1731,14 +1179,12 @@
 
         calPrev.addEventListener('click', () => {
             calMonth--;
-            if (calMonth < 0) { calMonth = 11;
-                calYear--; }
+            if (calMonth < 0) { calMonth=11; calYear--; }
             renderCalendar();
         });
         calNext.addEventListener('click', () => {
             calMonth++;
-            if (calMonth > 11) { calMonth = 0;
-                calYear++; }
+            if (calMonth > 11) { calMonth=0; calYear++; }
             renderCalendar();
         });
         calToday.addEventListener('click', () => {
@@ -1748,22 +1194,29 @@
             renderCalendar();
         });
 
-        // ================================================================
-        //  日历记录弹窗
-        // ================================================================
+        // ===== 记录弹窗（含心情） =====
+        let currentRecordDate = null;
+        let selectedMood = '';
+
         function openRecordModal(dateStr) {
             currentRecordDate = dateStr;
             const dateObj = parseDate(dateStr);
             recordModalTitle.textContent = `📝 ${dateObj.getFullYear()}年${dateObj.getMonth()+1}月${dateObj.getDate()}日`;
-            const content = data.calendar[dateStr] || '';
-            recordText.value = content;
-            recordDelBtn.style.display = content ? 'inline-block' : 'none';
+            const record = data.calendar[dateStr] || { text: '', mood: '' };
+            recordText.value = record.text || '';
+            selectedMood = record.mood || '';
+            // 高亮 mood
+            moodSelector.querySelectorAll('button').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mood === selectedMood);
+            });
+            recordDelBtn.style.display = record.text || record.mood ? 'inline-block' : 'none';
             recordModal.classList.add('open');
         }
 
         function closeRecordModal() {
             recordModal.classList.remove('open');
             currentRecordDate = null;
+            selectedMood = '';
         }
 
         recordCloseBtn.addEventListener('click', closeRecordModal);
@@ -1771,13 +1224,23 @@
             if (e.target === recordModal) closeRecordModal();
         });
 
+        // 心情选择
+        moodSelector.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                moodSelector.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedMood = btn.dataset.mood;
+            });
+        });
+
         recordSaveBtn.addEventListener('click', () => {
             if (!currentRecordDate) return;
             const text = recordText.value.trim();
-            if (text) {
-                data.calendar[currentRecordDate] = text;
-            } else {
+            const mood = selectedMood;
+            if (!text && !mood) {
                 delete data.calendar[currentRecordDate];
+            } else {
+                data.calendar[currentRecordDate] = { text, mood };
             }
             saveData(data);
             renderCalendar();
@@ -1795,7 +1258,7 @@
         });
 
         // ================================================================
-        //  板块三：碎碎念 (备忘录)
+        //  板块三：碎碎念
         // ================================================================
         const MEMO_CONFIG = [
             { key: 'touched', icon: '💖', title: '那些好好好感动的瞬间', placeholder: '写下感动的瞬间…' },
@@ -1827,7 +1290,6 @@
                 `;
                 memoGrid.appendChild(card);
 
-                // 绑定添加
                 const input = card.querySelector(`#memoInput_${cfg.key}`);
                 const btn = card.querySelector(`[data-key="${cfg.key}"]`);
                 const addMemo = () => {
@@ -1842,7 +1304,6 @@
                     if (e.key === 'Enter') addMemo();
                 });
 
-                // 绑定删除 (事件委托)
                 const list = card.querySelector(`#memoList_${cfg.key}`);
                 list.addEventListener('click', (e) => {
                     const delBtn = e.target.closest('.del-memo');
@@ -1868,9 +1329,8 @@
                 return;
             }
             let html = '';
-            for (let i = 0; i < audios.length; i++) {
-                const a = audios[i];
-                const sizeStr = a.size ? (a.size / 1024).toFixed(1) + ' KB' : '';
+            audios.forEach((a, i) => {
+                const sizeStr = a.size ? (a.size/1024).toFixed(1) + ' KB' : '';
                 html += `
                     <div class="audio-item" data-index="${i}">
                         <div class="audio-info">
@@ -1881,19 +1341,15 @@
                         <button class="del-audio" data-index="${i}">✕</button>
                     </div>
                 `;
-            }
+            });
             audioList.innerHTML = html;
-
-            // 删除事件
             audioList.querySelectorAll('.del-audio').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const idx = parseInt(btn.dataset.index);
-                    if (!isNaN(idx)) {
-                        if (confirm('确定删除这段音频吗？')) {
-                            data.audios.splice(idx, 1);
-                            saveData(data);
-                            renderAudios();
-                        }
+                    if (!isNaN(idx) && confirm('确定删除这段音频吗？')) {
+                        data.audios.splice(idx, 1);
+                        saveData(data);
+                        renderAudios();
                     }
                 });
             });
@@ -1901,7 +1357,7 @@
 
         audioFileInput.addEventListener('change', (e) => {
             const files = e.target.files;
-            if (!files || files.length === 0) return;
+            if (!files || files.length===0) return;
             for (const file of files) {
                 if (!file.type.startsWith('audio/')) continue;
                 const reader = new FileReader();
@@ -1920,9 +1376,7 @@
             audioFileInput.value = '';
         });
 
-        // ================================================================
-        //  键盘快捷键：Esc 关闭弹窗
-        // ================================================================
+        // ===== ESC 关闭弹窗 =====
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 if (photoModal.classList.contains('open')) closePhotoModal();
@@ -1930,10 +1384,7 @@
             }
         });
 
-        // ================================================================
-        //  初始化完成
-        // ================================================================
         console.log('💕 恋爱日记已加载，祝你们幸福！');
     </script>
 </body>
-- </html>
+</html>
